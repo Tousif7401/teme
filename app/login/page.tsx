@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { backend } from "@/services/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,7 +10,8 @@ export default function LoginPage() {
     window.location.href = "/api/auth/google";
   };
   const loginWithGitHub = () => {
-    window.location.href = backend.githubLoginUrl();
+    // Frontend-driven OAuth (mirrors Google). Never touches the backend directly.
+    window.location.href = "/api/auth/github";
   };
 
   return (
