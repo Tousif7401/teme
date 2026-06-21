@@ -1,107 +1,94 @@
 /**
- * API Service Layer
- * Handles all REST API operations
+ * API Service Layer — wired to the live DevMatch backend.
+ * Uses bearer-token auth. Provisions a transparent guest account so the
+ * UI "just works" without a separate login screen.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE || "https://13.206.6.189.nip.io").replace(/\/$/, "");
+const V1 = `${API_BASE}/api/v1`;
 
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
+const ACCESS = "teme_access";
+const REFRESH = "teme_refresh";
+
+export const tokens = {
+  get access() {
+    return typeof window === "undefined" ? null : sessionStorage.getItem(ACCESS);
+  },
+  get refresh() {
+    return typeof window === "undefined" ? null : sessionStorage.getItem(REFRESH);
+  },
+  set(a: string, r: string) {
+    sessionStorage.setItem(ACCESS, a);
+    sessionStorage.setItem(REFRESH, r);
+  },
+  clear() {
+    sessionStorage.removeItem(ACCESS);
+    sessionStorage.removeItem(REFRESH);
+  },
+};
+
+async function req<T>(path: string, opts: { method?: string; body?: unknown; auth?: boolean } = {}): Promise<T> {
+  const { method = "GET", body, auth = true } = opts;
+  const headers: Record<string, string> = {};
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (auth && tokens.access) headers["Authorization"] = `Bearer ${tokens.access}`;
+  const res = await fetch(`${V1}${path}`, {
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error(data?.message || `Request failed (${res.status})`);
+  return data as T;
 }
 
-/**
- * Authentication API
- */
-export const authApi = {
-  async verifyToken(token: string): Promise<ApiResponse<{ user: { id: string; username: string } }>> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/verify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+const rand = () => Math.random().toString(36).slice(2, 12);
 
-      const data = await response.json();
-      return { success: response.ok, data };
-    } catch (error) {
-      return { success: false, error: "Network error" };
-    }
+export interface AuthUser {
+  id: string;
+  email: string;
+  ageVerified: boolean;
+}
+
+export const backend = {
+  /** Create a ready-to-match guest account (register → verify age → profile). Returns user id. */
+  async provisionGuest(): Promise<string> {
+    const email = `guest_${rand()}${rand()}@devmatch.guest`;
+    const password = `Px-${rand()}${rand()}!9`;
+    const reg = await req<{ accessToken: string; refreshToken: string }>("/auth/register", {
+      method: "POST",
+      body: { email, password },
+      auth: false,
+    });
+    tokens.set(reg.accessToken, reg.refreshToken);
+
+    await req("/auth/verify-age", { method: "POST" });
+    // Re-login so the access token carries ageVerified=true.
+    const login = await req<{ accessToken: string; refreshToken: string }>("/auth/login", {
+      method: "POST",
+      body: { email, password },
+      auth: false,
+    });
+    tokens.set(login.accessToken, login.refreshToken);
+
+    const me = await req<AuthUser>("/auth/me");
+    // A default profile so matchmaking accepts us. Region "in" so guests match each other.
+    await req("/profiles/me", {
+      method: "PUT",
+      body: {
+        displayName: `dev_${rand().slice(0, 5)}`,
+        techStack: [],
+        role: "fullstack",
+        interestedIn: [],
+        region: "in",
+        languages: ["en"],
+      },
+    });
+    return me.id;
   },
 
-  async refreshAuthToken(): Promise<ApiResponse<{ token: string }>> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
-
-      const data = await response.json();
-      return { success: response.ok, data };
-    } catch (error) {
-      return { success: false, error: "Network error" };
-    }
-  },
-};
-
-/**
- * User preferences API
- */
-export const userApi = {
-  async updatePreferences(userId: string, preferences: { languages: string[]; vibe: string[] }): Promise<ApiResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/user/${userId}/preferences`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(preferences),
-      });
-
-      return { success: response.ok };
-    } catch (error) {
-      return { success: false, error: "Network error" };
-    }
-  },
-};
-
-/**
- * Matchmaking API
- */
-export const matchApi = {
-  async joinQueue(userId: string, preferences: { languages: string[]; vibe: string[] }): Promise<ApiResponse<{ queueId: string }>> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/match/join`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId, preferences }),
-      });
-
-      const data = await response.json();
-      return { success: response.ok, data };
-    } catch (error) {
-      return { success: false, error: "Network error" };
-    }
-  },
-
-  async leaveQueue(queueId: string): Promise<ApiResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/match/leave`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ queueId }),
-      });
-
-      return { success: response.ok };
-    } catch (error) {
-      return { success: false, error: "Network error" };
-    }
-  },
+  turnCredentials: () => req<{ iceServers: RTCIceServer[]; ttl: number }>("/turn/credentials"),
+  report: (reportedId: string, reason: string) =>
+    req("/reports", { method: "POST", body: { reportedId, reason } }),
 };
