@@ -5,6 +5,9 @@ export { Input, type InputProps } from "./Input";
 export { Tabs, TabsList, TabsTrigger, TabsContent, type TabsProps } from "./Tabs";
 export { PulseTicker, type PulseTickerProps } from "./PulseTicker";
 
+// Mode Provider
+export { ModeProvider } from "./ModeProvider";
+
 // Landing Page Components
 export { Header } from "./Header";
 export { Hero } from "./Hero";

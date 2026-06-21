@@ -6,10 +6,15 @@ export type ViewState = "landing" | "launchpad" | "queue" | "chatroom";
 // WebSocket connection status
 export type ConnectionStatus = "disconnected" | "connecting" | "connected";
 
+// Landing page mode (tech vs non-tech)
+export type LandingMode = "tech" | "nontech";
+
 // User interface state
 interface UIState {
   currentView: ViewState;
   setCurrentView: (view: ViewState) => void;
+  landingMode: LandingMode;
+  setLandingMode: (mode: LandingMode) => void;
 }
 
 // Authentication state
@@ -54,6 +59,8 @@ export const useAppStore = create<AppStore>((set) => ({
   // UI State
   currentView: "landing",
   setCurrentView: (view) => set({ currentView: view }),
+  landingMode: "tech",
+  setLandingMode: (mode) => set({ landingMode: mode }),
 
   // Auth State
   isAuthenticated: false,

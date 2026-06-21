@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TEME | P2P Dev Roulette</title>
+<title>TEME | P2P Dev & Idea Roulette</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -11,12 +11,13 @@
 <style>
   :root {
     /* Stark, uncompromising palette */
-    --bg: #F0F0EE; /* Newsprint off-white */
-    --ink: #0A0A0A; /* Deep black */
-    --accent-red: #FF3366; /* Aggressive action color */
-    --accent-green: #00E676; /* Live status color */
-    --accent-blue: #2962FF; /* Secondary action */
-    --accent-yellow: #FFEA00; /* Warning/Highlight */
+    --bg: #F0F0EE; 
+    --ink: #0A0A0A; 
+    --accent-red: #FF3366; 
+    --accent-green: #00E676; 
+    --accent-blue: #2962FF; 
+    --accent-yellow: #FFEA00;
+    --accent-purple: #B026FF;
     
     /* Rigid structure */
     --border-width: 2px;
@@ -38,7 +39,6 @@
 
   ::selection { background: var(--ink); color: var(--bg); }
 
-  /* Typography */
   h1, h2, h3 { 
     font-family: 'Bricolage Grotesque', sans-serif; 
     text-transform: uppercase;
@@ -68,29 +68,75 @@
   
   .logo { font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -0.05em; }
   
+  /* Brutalist Toggle */
+  .mode-toggle {
+    display: flex;
+    border: var(--border);
+    background: var(--bg);
+    box-shadow: 4px 4px 0px var(--ink);
+  }
+  .toggle-btn {
+    padding: 8px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    transition: all 0.1s ease;
+  }
+  .toggle-btn:first-child { border-right: var(--border); }
+  .toggle-btn.active {
+    background: var(--ink);
+    color: var(--accent-green);
+  }
+  body[data-mode="nontech"] .toggle-btn.active {
+    color: var(--accent-purple);
+  }
+
   .nav-status { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; }
-  .blinking-dot { width: 12px; height: 12px; background-color: var(--accent-green); border: 2px solid var(--ink); border-radius: 50%; animation: blink 1.5s infinite; }
+  .blinking-dot { width: 12px; height: 12px; border: 2px solid var(--ink); border-radius: 50%; animation: blink 1.5s infinite; }
+  body[data-mode="tech"] .blinking-dot { background-color: var(--accent-green); }
+  body[data-mode="nontech"] .blinking-dot { background-color: var(--accent-purple); }
+  
   @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
   /* ---------- MARQUEE ---------- */
   .marquee-container {
     border-bottom: var(--border);
     padding: 8px 0;
-    background: var(--accent-red);
     color: var(--ink);
     font-weight: 600;
     overflow: hidden;
     white-space: nowrap;
     display: flex;
+    transition: background 0.2s ease;
   }
+  body[data-mode="tech"] .marquee-container { background: var(--accent-red); }
+  body[data-mode="nontech"] .marquee-container { background: var(--accent-yellow); }
+
   .marquee-content { display: flex; gap: 32px; animation: scroll 20s linear infinite; }
   @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* ---------- CSS TOGGLE LOGIC ---------- */
+  .tech-only { display: block; }
+  .nontech-only { display: none; }
+  
+  body[data-mode="nontech"] .tech-only { display: none; }
+  body[data-mode="nontech"] .nontech-only { display: block; }
+
+  /* For inline elements */
+  span.tech-only { display: inline; }
+  span.nontech-only { display: none; }
+  body[data-mode="nontech"] span.tech-only { display: none; }
+  body[data-mode="nontech"] span.nontech-only { display: inline; }
 
   /* ---------- HERO SPLIT ---------- */
   .hero { display: grid; grid-template-columns: 1fr 1fr; border-bottom: var(--border); }
   
   .hero-left { padding: 48px 48px 48px 24px; border-right: var(--border); display: flex; flex-direction: column; justify-content: space-between; }
-  .hero-left h1 { font-size: clamp(3.5rem, 7vw, 7rem); font-weight: 800; letter-spacing: -0.04em; margin-bottom: 24px; }
+  .hero-left h1 { font-size: clamp(3rem, 6vw, 6.5rem); font-weight: 800; letter-spacing: -0.04em; margin-bottom: 24px; }
   .hero-left p { font-size: 18px; max-width: 440px; margin-bottom: 48px; font-weight: 500; }
 
   .auth-console { background: var(--ink); color: var(--bg); padding: 24px; border: var(--border); }
@@ -107,6 +153,7 @@
   .btn.github { background: #E2E8F0; }
   .btn.google { background: #FEF08A; }
   .btn.primary { background: var(--accent-green); width: auto; display: inline-flex; }
+  body[data-mode="nontech"] .btn.primary { background: var(--accent-purple); color: var(--bg); }
 
   .hero-right {
     background: var(--bg); position: relative; display: flex; align-items: center; justify-content: center; padding: 24px;
@@ -118,8 +165,9 @@
     box-shadow: var(--shadow-brutal); display: flex; flex-direction: column; position: relative; overflow: hidden;
   }
   .radar-header { border-bottom: var(--border); padding: 8px 12px; font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; z-index: 2; }
-  .radar-content { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800; position: relative; }
+  .radar-content { flex-grow: 1; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 800; position: relative; text-align: center; }
   .scanline { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent-red); opacity: 0.5; animation: scan 3s linear infinite; }
+  body[data-mode="nontech"] .scanline { background: var(--accent-purple); }
   @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
 
   /* ---------- MANIFESTO ---------- */
@@ -128,9 +176,10 @@
     text-align: center; border-bottom: var(--border);
   }
   .manifesto h2 { font-size: clamp(2rem, 5vw, 4.5rem); color: var(--accent-yellow); margin-bottom: 24px; }
+  body[data-mode="nontech"] .manifesto h2 { color: var(--accent-purple); }
   .manifesto p { font-size: clamp(1.2rem, 2vw, 1.8rem); max-width: 800px; margin: 0 auto; font-weight: 500; }
 
-  /* ---------- NEW FOLD: OPERATING MODES ---------- */
+  /* ---------- OPERATING MODES ---------- */
   .modes-section {
     padding: 80px 24px;
     border-bottom: var(--border);
@@ -159,6 +208,7 @@
     border-bottom: var(--border); padding: 12px 16px; display: flex; justify-content: space-between;
     font-weight: 600; font-size: 12px; background: var(--accent-blue); color: var(--bg);
   }
+  body[data-mode="nontech"] .mode-topbar { background: var(--accent-red); }
   .mode-topbar.terminal-theme { background: var(--ink); color: var(--bg); border-bottom: 2px solid #333; }
   
   .mode-body { height: 450px; display: flex; flex-direction: column; }
@@ -179,7 +229,7 @@
   .cam-btn { background: var(--bg); border: var(--border); padding: 6px 12px; font-size: 11px; font-weight: bold; cursor: pointer; }
   .cam-btn.skip { background: var(--accent-red); color: var(--ink); }
 
-  /* Mockup 2: Terminal Split */
+  /* Mockup 2: Terminal / Chat Split */
   .terminal-split {
     flex-grow: 1; background: var(--ink); color: var(--bg);
     display: flex; flex-direction: column; padding: 24px; font-size: 13px;
@@ -190,19 +240,22 @@
   }
   .sys-msg { color: #888; }
   .peer-msg { color: var(--accent-green); }
+  body[data-mode="nontech"] .peer-msg { color: var(--accent-purple); }
   .host-msg { color: var(--accent-blue); }
   
   .terminal-scratchpad { background: #111; padding: 16px; border: 1px solid #333; }
   .terminal-code { color: #a78bfa; font-family: 'IBM Plex Mono', monospace; line-height: 1.5; }
-  .code-keyword { color: #F43F5E; }
-  .code-func { color: #38BDF8; }
-  .code-comment { color: #888; }
   
+  /* Whiteboard version for Non-tech */
+  .whiteboard-view { background: #FEF08A; padding: 16px; border: var(--border); color: var(--ink); height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-family: 'Bricolage Grotesque', sans-serif;}
+  .sticky-note { background: #fff; padding: 16px; border: 1px solid #ccc; box-shadow: 4px 4px 0 rgba(0,0,0,0.1); transform: rotate(-2deg); font-size: 18px; }
+
   .terminal-input { display: flex; gap: 8px; margin-top: 16px; color: var(--bg); font-weight: bold; }
 
   /* ---------- SYSTEM SPECS ---------- */
   .specs-section { display: grid; grid-template-columns: 300px 1fr; border-bottom: var(--border); }
   .specs-sidebar { border-right: var(--border); padding: 32px 24px; background: var(--accent-yellow); color: var(--ink); }
+  body[data-mode="nontech"] .specs-sidebar { background: var(--accent-green); }
   .specs-sidebar h2 { font-size: 48px; }
   .specs-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
   .spec-item { padding: 32px 24px; border-right: var(--border); }
@@ -210,12 +263,14 @@
   .spec-label { font-size: 12px; margin-bottom: 16px; display: inline-block; border: 1px solid var(--ink); padding: 4px 8px; border-radius: 16px; font-weight: 600; }
   .spec-item h3 { font-size: 24px; margin-bottom: 12px; }
 
-  /* ---------- TERMINAL FAQ ---------- */
+  /* ---------- FAQ ---------- */
   .faq-section { padding: 80px 24px; background: var(--bg); }
   .faq-container { max-width: 800px; margin: 0 auto; }
   .faq-header { font-size: 3rem; margin-bottom: 32px; text-align: center; }
+  
   .faq-item { margin-bottom: 24px; border: var(--border); background: var(--ink); color: var(--bg); box-shadow: var(--shadow-brutal); }
   .faq-cmd { padding: 16px; border-bottom: 1px solid #333; color: var(--accent-green); font-weight: 600; }
+  body[data-mode="nontech"] .faq-cmd { color: var(--accent-purple); }
   .faq-cmd::before { content: '> '; color: var(--accent-red); }
   .faq-output { padding: 16px; color: #CCC; font-size: 15px; }
 
@@ -230,9 +285,7 @@
     .hero { grid-template-columns: 1fr; }
     .hero-left { border-right: none; border-bottom: var(--border); }
     .hero-right { padding: 64px 24px; }
-    
     .modes-grid { grid-template-columns: 1fr; gap: 64px; }
-    
     .specs-section { grid-template-columns: 1fr; }
     .specs-sidebar { border-right: none; border-bottom: var(--border); padding: 24px; }
   }
@@ -240,10 +293,9 @@
   @media (max-width: 768px) {
     body { padding: 8px; }
     .master-frame { min-height: calc(100vh - 16px); }
+    header { flex-direction: column; gap: 16px; align-items: flex-start; }
     .hero-left h1 { font-size: 3rem; }
-    
     .modes-header { padding: 16px 24px; }
-    
     .specs-grid { grid-template-columns: 1fr; }
     .spec-item { border-right: none; border-bottom: var(--border); }
     .spec-item:last-child { border-bottom: none; }
@@ -252,26 +304,30 @@
   }
 </style>
 </head>
-<body>
+<body data-mode="tech">
 
 <div class="master-frame">
   
   <!-- NAV -->
   <header>
     <div class="logo">TEME</div>
+    
+    <!-- THE MODE SWITCH -->
+    <div class="mode-toggle">
+      <button class="toggle-btn active" id="btn-tech">[ SYS.DEV ]</button>
+      <button class="toggle-btn" id="btn-nontech">[ VISITOR ]</button>
+    </div>
+
     <div class="nav-status">
       <div class="blinking-dot"></div>
-      <span id="online-count">1,042 SYS.ONLINE</span>
+      <span id="online-count">1,042 ONLINE</span>
     </div>
   </header>
 
   <!-- MARQUEE -->
   <div class="marquee-container">
-    <div class="marquee-content">
-      <span>/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///</span>
-      <span>/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///</span>
-      <span>/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///</span>
-      <span>/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///</span>
+    <div class="marquee-content" id="marquee-text">
+      <!-- Injected via JS based on mode -->
     </div>
   </div>
 
@@ -279,19 +335,23 @@
   <main class="hero">
     <div class="hero-left">
       <div>
-        <h1>Talk code.<br>Skip the BS.</h1>
-        <p>A volatile, anonymous 1-on-1 network exclusively for developers. Drop into the queue, share your terminal, or hit ESC to route to the next peer.</p>
+        <h1 class="tech-only">Talk code.<br>Skip the BS.</h1>
+        <h1 class="nontech-only">Pitch ideas.<br>Find Builders.</h1>
+        
+        <p class="tech-only">A volatile, anonymous 1-on-1 network exclusively for developers. Drop into the queue, share your terminal, or hit ESC to route to the next peer.</p>
+        <p class="nontech-only">Zero coding required. Jump into 1-on-1 chats with developers. Ask how AI works, pitch your startup idea, or find a technical co-founder instantly.</p>
       </div>
 
       <div class="auth-console">
-        <div class="auth-console-header">~/teme/auth/require_identity</div>
+        <div class="auth-console-header tech-only">~/teme/auth/require_identity</div>
+        <div class="auth-console-header nontech-only">SYSTEM // VERIFY VIBE CHECK</div>
         <div class="auth-buttons">
           <button class="btn github">
-            <span>[ Initialize: GitHub ]</span>
+            <span>[ Auth: GitHub ]</span>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
           </button>
           <button class="btn google">
-            <span>[ Initialize: Google ]</span>
+            <span>[ Auth: Google ]</span>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>
           </button>
         </div>
@@ -301,13 +361,15 @@
     <div class="hero-right">
       <div class="radar-box">
         <div class="radar-header">
-          <span>PORT: 443</span>
+          <span class="tech-only">PORT: 443</span>
+          <span class="nontech-only">RADAR: ACTIVE</span>
           <span id="radar-status" style="color: var(--accent-red);">AWAITING AUTH</span>
         </div>
         <div class="radar-content">
           <div class="scanline"></div>
-          <div id="radar-text" style="text-align: center; font-size: 20px; color: #888;">
-            IDENTITY<br>REQUIRED
+          <div id="radar-text" style="color: #888;">
+            <span class="tech-only">IDENTITY<br>REQUIRED</span>
+            <span class="nontech-only">VIBE CHECK<br>PENDING</span>
           </div>
         </div>
       </div>
@@ -316,16 +378,20 @@
 
   <!-- MANIFESTO FOLD -->
   <section class="manifesto">
-    <h2>NETWORKING IS BROKEN.<br>LINKEDIN IS CRINGE.</h2>
-    <p>We built TEME because tech meetups are awkward and Discord servers are too noisy. You just need a place to drop in, pair program with a stranger, and log out. No performative posting, no follow counts.</p>
+    <h2 class="tech-only">NETWORKING IS BROKEN.<br>LINKEDIN IS CRINGE.</h2>
+    <h2 class="nontech-only">TECH NETWORKING IS TOO EXCLUSIVE.<br>WE FIXED IT.</h2>
+    
+    <p class="tech-only">We built TEME because tech meetups are awkward and Discord servers are too noisy. You just need a place to drop in, pair program with a stranger, and log out. No performative posting, no follow counts.</p>
+    <p class="nontech-only">You don't need a CS degree to talk to people building the future. Stop sending cold DMs on Twitter. Just drop in, match with a random developer, and see what happens. No jargon, just ideas.</p>
   </section>
 
-  <!-- NEW FOLD: OPERATING MODES -->
+  <!-- OPERATING MODES -->
   <section class="modes-section">
     <div class="modes-header-container">
       <div class="modes-header">
         <h2>CHOOSE YOUR VECTOR</h2>
-        <p>Two strictly defined interfaces. No bloated features.</p>
+        <p class="tech-only">Two strictly defined interfaces. No bloated features.</p>
+        <p class="nontech-only">Camera on or camera off. You control the vibe.</p>
       </div>
     </div>
     
@@ -334,16 +400,17 @@
       <div class="mode-card">
         <div class="mode-topbar">
           <span>● ● ●</span>
-          <span>[ MODE 01: AUDIO / VISUAL ]</span>
-          <span>WEBRTC // ACTIVE</span>
+          <span>[ MODE 01: FACE TO FACE ]</span>
+          <span class="tech-only">WEBRTC // ACTIVE</span>
+          <span class="nontech-only">LIVE VIDEO</span>
         </div>
         <div class="mode-body video-split">
           <div class="cam-feed">
-            <span class="cam-label">REMOTE_PEER_CAM</span>
+            <span class="cam-label">THE BUILDER</span>
             <div style="color: var(--ink); opacity: 0.8;">[ VIDEO SIGNAL ]</div>
           </div>
           <div class="cam-feed" style="background: var(--bg);">
-            <span class="cam-label">LOCAL_HOST_CAM</span>
+            <span class="cam-label">YOU</span>
             <div style="opacity: 0.2;">[ CAMERA ACTIVE ]</div>
             <div class="cam-controls">
               <div class="cam-btn">MUTE_MIC</div>
@@ -357,25 +424,40 @@
       <div class="mode-card">
         <div class="mode-topbar terminal-theme">
           <span>● ● ●</span>
-          <span>[ MODE 02: TERMINAL + CHAT ]</span>
-          <span>WSS // CONNECTED</span>
+          <span class="tech-only">[ MODE 02: TERMINAL + CHAT ]</span>
+          <span class="nontech-only">[ MODE 02: CHAT + WHITEBOARD ]</span>
+          <span>CONNECTED</span>
         </div>
         <div class="mode-body terminal-split">
+          
+          <!-- Chat Section -->
           <div class="terminal-chat">
-            <div class="sys-msg">[14:02:11] SYSTEM: Peer connection established.</div>
-            <div><span class="peer-msg">> peer_8x92a:</span> Anyone here good with React concurrency?</div>
-            <div><span class="host-msg">> you:</span> Yeah, what's the issue?</div>
-            <div><span class="peer-msg">> peer_8x92a:</span> Check the scratchpad below.</div>
+            <div class="sys-msg">[14:02] SYSTEM: Match established.</div>
+            
+            <div class="tech-only">
+              <div><span class="peer-msg">> dev_8x:</span> Anyone here good with React?</div>
+              <div><span class="host-msg">> you:</span> Yeah, what's the issue?</div>
+            </div>
+            
+            <div class="nontech-only">
+              <div><span class="host-msg">> you:</span> I have this app idea but zero coding skills.</div>
+              <div><span class="peer-msg">> dev_8x:</span> Let's map it out. Do you have a wireframe?</div>
+            </div>
           </div>
           
-          <div class="terminal-scratchpad">
-            <div class="code-comment" style="margin-bottom: 8px;">// SHARED SCRATCHPAD (LIVE SYNC)</div>
+          <!-- Code/Whiteboard Split -->
+          <div class="terminal-scratchpad tech-only">
             <div class="terminal-code">
               <span class="code-keyword">function</span> <span class="code-func">useFetch</span>() {<br>
               &nbsp;&nbsp;<span class="code-keyword">const</span> [data, setData] = useState(<span class="code-func">null</span>);<br>
-              &nbsp;&nbsp;<span class="code-comment">// infinite loop happening here?</span><br>
-              &nbsp;&nbsp;useEffect(() => fetch(url), [url, data]);<br>
+              &nbsp;&nbsp;<span class="code-keyword">return</span> data;<br>
               }
+            </div>
+          </div>
+
+          <div class="whiteboard-view nontech-only">
+            <div class="sticky-note">
+              <strong>App Idea:</strong><br>Tinder for finding Devs
             </div>
           </div>
           
@@ -387,26 +469,36 @@
     </div>
   </section>
 
-  <!-- FEATURES (System Specs) -->
+  <!-- SYSTEM SPECS -->
   <section class="specs-section">
     <div class="specs-sidebar">
-      <h2>SYS.<br>SPECS</h2>
+      <h2 class="tech-only">SYS.<br>SPECS</h2>
+      <h2 class="nontech-only">THE<br>VIBE</h2>
     </div>
     <div class="specs-grid">
       <div class="spec-item">
-        <span class="spec-label">ENV.01</span>
-        <h3>Context Switching</h3>
-        <p>Start in text mode. If the vibe is right, upgrade to video instantly. Downgrade back to text if you need to focus. Total environmental control.</p>
+        <span class="spec-label tech-only">ENV.01</span>
+        <span class="spec-label nontech-only">RULE.01</span>
+        <h3 class="tech-only">Context Switching</h3>
+        <h3 class="nontech-only">Zero Intimidation</h3>
+        <p class="tech-only">Start in text mode. Upgrade to video instantly. Downgrade back to text if you need to focus. Total environmental control.</p>
+        <p class="nontech-only">Start entirely in text chat. If you vibe with the developer, turn your camera on. If not, just hit skip and match with someone else.</p>
       </div>
       <div class="spec-item">
-        <span class="spec-label">ENV.02</span>
-        <h3>Stack Filtering</h3>
-        <p>Looking for a Python dev? Set `require('python')`. Don't waste time explaining frameworks to the wrong crowd.</p>
+        <span class="spec-label tech-only">ENV.02</span>
+        <span class="spec-label nontech-only">RULE.02</span>
+        <h3 class="tech-only">Stack Filtering</h3>
+        <h3 class="nontech-only">Filter by Interest</h3>
+        <p class="tech-only">Looking for a Python dev? Set `require('python')`. Don't waste time explaining frameworks to the wrong crowd.</p>
+        <p class="nontech-only">Want to talk about AI, Web3, or Gaming? Set your filters so you only match with developers building in that specific space.</p>
       </div>
       <div class="spec-item">
-        <span class="spec-label">ENV.03</span>
-        <h3>Zero Clutter</h3>
-        <p>No profiles to curate. Authenticate to prove you aren't a bot, then drop straight into the peer pool.</p>
+        <span class="spec-label tech-only">ENV.03</span>
+        <span class="spec-label nontech-only">RULE.03</span>
+        <h3 class="tech-only">Zero Clutter</h3>
+        <h3 class="nontech-only">No Fake Profiles</h3>
+        <p class="tech-only">No profiles to curate. Authenticate to prove you aren't a bot, then drop straight into the peer pool.</p>
+        <p class="nontech-only">No bloated LinkedIn resumes or fake influencer bios. Everyone verifies via Google or Github. Real people, real conversations.</p>
       </div>
     </div>
   </section>
@@ -417,18 +509,27 @@
       <h2 class="faq-header">MANUAL / FAQ</h2>
       
       <div class="faq-item">
-        <div class="faq-cmd">teme query --topic "Is it just creeps like Omegle?"</div>
-        <div class="faq-output">Negative. Access requires strict GitHub or Google OAuth. Age of account and repo history are checked. Bots and bad actors are instantly IP-banned.</div>
+        <div class="faq-cmd">
+          <span class="tech-only">teme query --topic "Is it just creeps like Omegle?"</span>
+          <span class="nontech-only">Q: Is this safe? Or is it like Omegle?</span>
+        </div>
+        <div class="faq-output">Negative. Access requires strict Google or GitHub verification. Bots and bad actors are instantly IP-banned. The community polices itself.</div>
       </div>
       
       <div class="faq-item">
-        <div class="faq-cmd">teme query --topic "Do I have to use my camera?"</div>
-        <div class="faq-output">No. As shown in the operating modes above, you can initialize the connection strictly in Terminal/Text mode. Video is entirely opt-in.</div>
+        <div class="faq-cmd">
+          <span class="tech-only">teme query --topic "Do I have to use my camera?"</span>
+          <span class="nontech-only">Q: Do I have to show my face?</span>
+        </div>
+        <div class="faq-output">No. You can initialize the connection strictly in Text/Chat mode. Video is entirely opt-in.</div>
       </div>
 
       <div class="faq-item">
-        <div class="faq-cmd">teme query --topic "Is this free?"</div>
-        <div class="faq-output">Core routing is free. Servers cost money, so a 'Pro' tier for advanced stack filtering and priority routing may compile later.</div>
+        <div class="faq-cmd">
+          <span class="tech-only">teme query --topic "Is this free?"</span>
+          <span class="nontech-only">Q: Does this cost money?</span>
+        </div>
+        <div class="faq-output">Core routing is 100% free. Servers cost money, so a 'Pro' tier for advanced filtering might launch later.</div>
       </div>
     </div>
   </section>
@@ -436,9 +537,11 @@
   <!-- FOOTER CTA -->
   <footer>
     <div class="footer-cta">
-      <h2>READY TO EXECUTE?</h2>
+      <h2 class="tech-only">READY TO EXECUTE?</h2>
+      <h2 class="nontech-only">READY TO VIBE?</h2>
       <button class="btn primary" onclick="window.scrollTo(0,0)">
-        <span>[ INITIATE CONNECTION ]</span>
+        <span class="tech-only">[ INITIATE CONNECTION ]</span>
+        <span class="nontech-only">[ START MATCHING ]</span>
       </button>
     </div>
     <div class="footer-meta">
@@ -451,13 +554,41 @@
 </div>
 
 <script>
+  // Mode Toggle Logic
+  const btnTech = document.getElementById('btn-tech');
+  const btnNontech = document.getElementById('btn-nontech');
+  const body = document.body;
+  const marqueeText = document.getElementById('marquee-text');
+
+  const marqueeTech = "<span>/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///</span>".repeat(4);
+  const marqueeNontech = "<span>/// FIND A CO-FOUNDER /// PITCH YOUR IDEA /// ZERO CODING REQUIRED /// JUST VIBES ///</span>".repeat(4);
+
+  function setMode(mode) {
+    body.setAttribute('data-mode', mode);
+    if(mode === 'tech') {
+      btnTech.classList.add('active');
+      btnNontech.classList.remove('active');
+      marqueeText.innerHTML = marqueeTech;
+    } else {
+      btnNontech.classList.add('active');
+      btnTech.classList.remove('active');
+      marqueeText.innerHTML = marqueeNontech;
+    }
+  }
+
+  // Initialize
+  setMode('tech');
+
+  btnTech.addEventListener('click', () => setMode('tech'));
+  btnNontech.addEventListener('click', () => setMode('nontech'));
+
   // Active connection number simulation
   const counterEl = document.getElementById('online-count');
   let count = 1042;
   setInterval(() => {
     const diff = Math.floor(Math.random() * 5) - 2;
     count = Math.max(900, Math.min(1200, count + diff));
-    counterEl.textContent = `${count.toLocaleString()} SYS.ONLINE`;
+    counterEl.textContent = `${count.toLocaleString()} ONLINE`;
   }, 3000);
 
   // Radar Box Interaction
@@ -469,7 +600,7 @@
   buttons.forEach(btn => {
     btn.addEventListener('mouseenter', () => {
       radarStatus.style.color = 'var(--ink)';
-      radarStatus.textContent = 'ROUTING...';
+      radarStatus.textContent = body.getAttribute('data-mode') === 'tech' ? 'ROUTING...' : 'CHECKING VIBES...';
       radarText.innerHTML = '<span style="color: var(--ink);">HANDSHAKE<br>READY</span>';
       scanline.style.background = 'var(--ink)';
       scanline.style.animationDuration = '1s';
@@ -478,9 +609,12 @@
     btn.addEventListener('mouseleave', () => {
       radarStatus.style.color = 'var(--accent-red)';
       radarStatus.textContent = 'AWAITING AUTH';
-      radarText.innerHTML = 'IDENTITY<br>REQUIRED';
+      
+      const isTech = body.getAttribute('data-mode') === 'tech';
+      radarText.innerHTML = isTech ? 'IDENTITY<br>REQUIRED' : 'VIBE CHECK<br>PENDING';
       radarText.style.color = '#888';
-      scanline.style.background = 'var(--accent-red)';
+      
+      scanline.style.background = isTech ? 'var(--accent-red)' : 'var(--accent-purple)';
       scanline.style.animationDuration = '3s';
     });
   });
