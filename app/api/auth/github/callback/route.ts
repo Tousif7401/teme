@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-const APP_URL = process.env.APP_URL ?? "https://localhost:3000";
+const APP_URL = (process.env.APP_URL ?? "https://localhost:3000").replace(/\/$/, "");
 const REDIRECT_URI = `${APP_URL}/api/auth/github/callback`;
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "https://13.206.6.189.nip.io").replace(/\/$/, "");
 
