@@ -11,10 +11,13 @@ export default function VideoChatPage() {
   const router = useRouter();
   const [authed, setAuthed] = useState(false);
 
-  // Logged-in users only — bounce guests to the login page.
+  // Logged-in users only, and only once preferences are set.
   useEffect(() => {
-    if (backend.isLoggedIn()) setAuthed(true);
-    else router.replace("/login");
+    if (!backend.isLoggedIn()) {
+      router.replace("/login");
+      return;
+    }
+    backend.hasProfile().then((has) => (has ? setAuthed(true) : router.replace("/preferences")));
   }, [router]);
 
   // ESC = skip to next peer (matches the "SKIP (ESC)" control).

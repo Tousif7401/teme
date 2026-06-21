@@ -26,10 +26,12 @@ export default function AuthCallbackPage() {
 
     backend
       .ensureReady()
-      .then(() => router.replace("/video-chat"))
+      // New users (no preferences yet) set them up first; returning users go straight in.
+      .then(() => backend.hasProfile())
+      .then((has) => router.replace(has ? "/video-chat" : "/preferences"))
       .catch(() => {
         setMsg("Could not finish setup. Redirecting…");
-        setTimeout(() => router.replace("/video-chat"), 1500);
+        setTimeout(() => router.replace("/preferences"), 1500);
       });
   }, [router]);
 

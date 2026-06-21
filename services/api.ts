@@ -70,6 +70,15 @@ export interface AuthUser {
   ageVerified: boolean;
 }
 
+export interface Profile {
+  displayName: string;
+  techStack: string[];
+  role: string;
+  interestedIn: string[];
+  region: string;
+  languages: string[];
+}
+
 const DEFAULT_PROFILE = () => ({
   displayName: `dev_${rand().slice(0, 5)}`,
   techStack: [],
@@ -110,9 +119,22 @@ export const backend = {
     });
     tokens.saveRefreshed(refreshed.accessToken, refreshed.refreshToken);
     const me = await req<AuthUser>("/auth/me");
-    await ensureProfile();
     return me.id;
   },
+
+  /** Read the caller's preferences (throws 404 if not set yet). */
+  getProfile: () => req<Profile>("/profiles/me"),
+  /** Has the user set their preferences? */
+  async hasProfile(): Promise<boolean> {
+    try {
+      await req("/profiles/me");
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  /** Save preferences. */
+  saveProfile: (p: Profile) => req<Profile>("/profiles/me", { method: "PUT", body: p }),
 
   /** Create a ready-to-match guest account (register → verify age → profile). Returns user id. */
   async provisionGuest(): Promise<string> {
