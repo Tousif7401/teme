@@ -13,7 +13,6 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
   ({ className, onEndCall, onSkipPeer }, ref) => {
     const [isMicMuted, setIsMicMuted] = useState(false);
     const [isCameraOff, setIsCameraOff] = useState(false);
-    const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([
       { id: 1, type: "system", text: "[14:02:11] Peer connection established via WebRTC." },
@@ -80,12 +79,6 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
                 </div>
                 <span className="font-display text-ink/60 text-sm">peer_dev</span>
               </div>
-              {/* Remote peer controls indicator */}
-              {isScreenSharing && (
-                <div className="absolute bottom-3 right-3 bg-accent-blue text-bg px-2 py-1 text-caption font-mono font-bold border-2 border-ink">
-                  SCREEN SHARING
-                </div>
-              )}
             </div>
 
             {/* Local Feed */}
@@ -110,35 +103,26 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
                 <button
                   onClick={() => setIsMicMuted(!isMicMuted)}
                   className={cn(
-                    "px-3 py-1.5 text-caption font-mono font-bold border-2 border-ink transition-colors",
+                    "px-3 py-1.5 text-[11px] font-mono font-bold border-2 border-ink transition-colors",
                     isMicMuted ? "bg-accent-red text-ink" : "bg-bg text-ink hover:bg-ink hover:text-bg"
                   )}
                 >
-                  {isMicMuted ? "UNMUTE" : "MUTE_MIC"}
+                  {isMicMuted ? "UNMUTE" : "MUTE"}
                 </button>
                 <button
                   onClick={() => setIsCameraOff(!isCameraOff)}
                   className={cn(
-                    "px-3 py-1.5 text-caption font-mono font-bold border-2 border-ink transition-colors",
+                    "px-3 py-1.5 text-[11px] font-mono font-bold border-2 border-ink transition-colors",
                     isCameraOff ? "bg-accent-red text-ink" : "bg-bg text-ink hover:bg-ink hover:text-bg"
                   )}
                 >
-                  {isCameraOff ? "CAMERA ON" : "CAMERA OFF"}
-                </button>
-                <button
-                  onClick={() => setIsScreenSharing(!isScreenSharing)}
-                  className={cn(
-                    "px-3 py-1.5 text-caption font-mono font-bold border-2 border-ink transition-colors",
-                    isScreenSharing ? "bg-accent-blue text-bg" : "bg-bg text-ink hover:bg-ink hover:text-bg"
-                  )}
-                >
-                  {isScreenSharing ? "STOP SHARE" : "SHARE SCREEN"}
+                  {isCameraOff ? "CAM ON" : "CAM OFF"}
                 </button>
                 <button
                   onClick={onSkipPeer}
-                  className="px-3 py-1.5 text-caption font-mono font-bold bg-accent-red text-ink border-2 border-ink hover:bg-ink hover:text-bg transition-colors"
+                  className="px-3 py-1.5 text-[11px] font-mono font-bold bg-accent-red text-ink border-2 border-ink hover:bg-ink hover:text-bg transition-colors"
                 >
-                  SKIP PEER (ESC)
+                  SKIP (ESC)
                 </button>
               </div>
             </div>
