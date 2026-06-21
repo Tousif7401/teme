@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
-import { backend, tokens } from "@/services/api";
+import { backend } from "@/services/api";
 import { connectSocket, type MatchFound, type ChatIn } from "@/services/socket";
 import { CallEngine } from "@/services/webrtc";
 
@@ -97,9 +97,10 @@ export function useVideoChat() {
     if (status !== "idle") return;
     setStatus("starting");
     setMessages([]);
-    sys("Provisioning session…");
+    sys(backend.isLoggedIn() ? "Preparing your session…" : "Provisioning guest session…");
     try {
-      myIdRef.current = await backend.provisionGuest();
+      // Use the signed-in account if present; otherwise spin up a guest.
+      myIdRef.current = backend.isLoggedIn() ? await backend.ensureReady() : await backend.provisionGuest();
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       localRef.current = stream;
       setLocalStream(stream);
@@ -166,7 +167,7 @@ export function useVideoChat() {
       engineRef.current?.stop();
       socketRef.current?.disconnect();
       localRef.current?.getTracks().forEach((t) => t.stop());
-      tokens.clear();
+      // Note: we keep tokens so a logged-in session persists across navigation.
     };
   }, []);
 
