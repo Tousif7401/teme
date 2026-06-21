@@ -7,8 +7,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   const loginWithGoogle = () => {
-    // Full-page redirect to the backend, which bounces to Google and back.
-    window.location.href = backend.googleLoginUrl();
+    // Frontend-driven OAuth: uses the redirect URI already registered on the Google client.
+    window.location.href = "/api/auth/google";
   };
   const loginWithGitHub = () => {
     window.location.href = backend.githubLoginUrl();
