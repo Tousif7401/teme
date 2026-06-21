@@ -55,8 +55,8 @@ export function OperatingModes() {
         <div className="mode-card">
           <div className="mode-topbar terminal-theme">
             <span>● ● ●</span>
-            <span className="tech-only">[ MODE 02: TERMINAL + CHAT ]</span>
-            <span className="nontech-only">[ MODE 02: CHAT + WHITEBOARD ]</span>
+            <span className="tech-only">[ MODE 02: TEXT ONLY CHAT ]</span>
+            <span className="nontech-only">[ MODE 02: CHAT ONLY ]</span>
             <span>CONNECTED</span>
           </div>
           <div className="mode-body chat-only-layout">

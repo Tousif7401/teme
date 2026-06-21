@@ -13,8 +13,8 @@ export function Marquee() {
 
   const content =
     landingMode === "tech"
-      ? `${marqueeTech}${marqueeTech}`
-      : `${marqueeNontech}${marqueeNontech}`;
+      ? `${marqueeTech}${marqueeTech}${marqueeTech}${marqueeTech}`
+      : `${marqueeNontech}${marqueeNontech}${marqueeNontech}${marqueeNontech}`;
 
   return (
     <div className="marquee-container">
