@@ -1,12 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { VideoChatView } from "@/components";
 import { useVideoChat } from "@/lib/useVideoChat";
 import { backend } from "@/services/api";
 
 export default function VideoChatPage() {
   const vc = useVideoChat();
+  const router = useRouter();
+  const [authed, setAuthed] = useState(false);
+
+  // Logged-in users only — bounce guests to the login page.
+  useEffect(() => {
+    if (backend.isLoggedIn()) setAuthed(true);
+    else router.replace("/login");
+  }, [router]);
 
   // ESC = skip to next peer (matches the "SKIP (ESC)" control).
   useEffect(() => {
@@ -27,6 +36,14 @@ export default function VideoChatPage() {
     void backend;
     vc.skip();
   };
+
+  if (!authed) {
+    return (
+      <div className="h-screen flex items-center justify-center" style={{ background: "var(--bg)", color: "var(--ink)" }}>
+        <span style={{ fontFamily: "monospace", fontSize: "13px" }}>Checking session…</span>
+      </div>
+    );
+  }
 
   return (
     <VideoChatView

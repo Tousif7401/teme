@@ -1,10 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 export default function LoginPage() {
-  const router = useRouter();
-
   const loginWithGoogle = () => {
     // Frontend-driven OAuth: uses the redirect URI already registered on the Google client.
     window.location.href = "/api/auth/google";
@@ -90,21 +86,7 @@ export default function LoginPage() {
           Continue with GitHub
         </button>
 
-        <div className="flex items-center gap-3 my-6">
-          <div style={{ flex: 1, height: "2px", background: "var(--ink)", opacity: 0.15 }} />
-          <span style={{ fontFamily: "monospace", fontSize: "11px", color: "#888" }}>OR</span>
-          <div style={{ flex: 1, height: "2px", background: "var(--ink)", opacity: 0.15 }} />
-        </div>
-
-        <button
-          onClick={() => router.push("/video-chat")}
-          className="btn"
-          style={{ width: "100%", background: "var(--bg)", color: "var(--ink)", border: "var(--border)", padding: "12px", fontFamily: "monospace", fontSize: "14px", fontWeight: 700 }}
-        >
-          Continue as guest →
-        </button>
-
-        <p style={{ fontFamily: "monospace", fontSize: "11px", color: "#888", marginTop: "20px", textAlign: "center" }}>
+        <p style={{ fontFamily: "monospace", fontSize: "11px", color: "#888", marginTop: "24px", textAlign: "center" }}>
           18+ only · By continuing you agree to the Terms
         </p>
       </div>

@@ -97,10 +97,14 @@ export function useVideoChat() {
     if (status !== "idle") return;
     setStatus("starting");
     setMessages([]);
-    sys(backend.isLoggedIn() ? "Preparing your session…" : "Provisioning guest session…");
+    if (!backend.isLoggedIn()) {
+      sys("Please sign in first.");
+      setStatus("idle");
+      return;
+    }
+    sys("Preparing your session…");
     try {
-      // Use the signed-in account if present; otherwise spin up a guest.
-      myIdRef.current = backend.isLoggedIn() ? await backend.ensureReady() : await backend.provisionGuest();
+      myIdRef.current = await backend.ensureReady();
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       localRef.current = stream;
       setLocalStream(stream);
