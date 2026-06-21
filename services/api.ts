@@ -88,8 +88,9 @@ async function ensureProfile() {
 }
 
 export const backend = {
-  /** Where the browser sends the user to start Google sign-in. */
+  /** Where the browser sends the user to start OAuth sign-in. */
   googleLoginUrl: () => `${V1}/auth/google`,
+  githubLoginUrl: () => `${V1}/auth/github`,
 
   /** Store tokens received from the OAuth callback as a persistent login. */
   setLoginTokens(a: string, r: string) {
