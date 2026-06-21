@@ -99,6 +99,10 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
     ref,
   ) => {
     const [message, setMessage] = useState("");
+    const [showChat, setShowChat] = useState(false);
+    const [showProfileDialog, setShowProfileDialog] = useState(false);
+    const [userStacks, setUserStacks] = useState(["React", "TypeScript", "Next.js", "Tailwind"]);
+    const [newStackInput, setNewStackInput] = useState("");
     const chatEndRef = useRef<HTMLDivElement>(null);
     const active = status !== "idle";
     const connected = status === "connected";
@@ -120,19 +124,34 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
       }
     };
 
+    const handleAddStack = () => {
+      if (newStackInput.trim() && !userStacks.includes(newStackInput.trim())) {
+        setUserStacks([...userStacks, newStackInput.trim()]);
+        setNewStackInput("");
+      }
+    };
+
+    const handleRemoveStack = (stackToRemove: string) => {
+      setUserStacks(userStacks.filter(stack => stack !== stackToRemove));
+    };
+
+    const handleStackKeyPress = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleAddStack();
+      }
+    };
+
     const remoteLabel = status === "searching" ? "SEARCHING FOR A PEER…" : status === "connecting" ? "CONNECTING…" : "WAITING…";
 
     return (
       <div ref={ref} className={cn("h-screen flex flex-col", className)} style={{ background: "var(--bg)", color: "var(--ink)" }}>
         {/* Top Bar */}
-        <div className="px-4 py-2 flex justify-between items-center" style={{ background: "var(--ink)", color: "var(--bg)", borderBottom: "var(--border)" }}>
-          <div className="flex items-center gap-3">
-            {connected ? (
-              <div className="blinking-dot" style={{ width: "12px", height: "12px", borderWidth: "2px" }} />
-            ) : (
-              <div style={{ width: "12px", height: "12px", borderRadius: "50%", border: "2px solid var(--bg)", background: "#888" }} />
-            )}
-            <span style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: "800", letterSpacing: "-0.05em" }}>TEME</span>
+        <div className="px-2 sm:px-4 py-6 sm:py-7 flex justify-between items-center" style={{ background: "var(--ink)", color: "var(--bg)", borderBottom: "var(--border)" }}>
+          <div className="flex items-center gap-0" style={{ marginLeft: "5px" }}>
+            <div className="blinking-dot" style={{ width: "10px", height: "10px", borderWidth: "2px" }} />
+            <span className="hidden sm:inline" style={{ fontFamily: "sans-serif", fontSize: "24px", fontWeight: "800", letterSpacing: "-0.05em" }}>TEME</span>
+            <span className="sm:hidden" style={{ fontFamily: "sans-serif", fontSize: "20px", fontWeight: "800", letterSpacing: "-0.05em" }}>TEME</span>
           </div>
           <div className="flex items-center gap-4">
             <div style={{ fontFamily: "monospace", fontSize: "12px", color: "#888" }}>
@@ -210,10 +229,30 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
             </div>
           </div>
 
-          {/* Right: Session Chat */}
-          <div style={{ width: "400px", display: "flex", flexDirection: "column", borderLeft: "var(--border)", background: "var(--bg)" }}>
-            <div className="px-4 py-3" style={{ borderBottom: "var(--border)", background: "rgba(10,10,10,0.05)" }}>
-              <span style={{ fontFamily: "monospace", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>Session Chat</span>
+          {/* Right: Session Chat - Equal width on desktop */}
+          <div className={cn(
+            "fixed inset-0 z-50 flex flex-col w-full", // Mobile: fullscreen overlay
+            !showChat && "hidden", // Hidden by default on mobile
+            "lg:flex lg:static lg:w-1/4" // Desktop: always visible, static position, 25% width
+          )} style={{ borderLeft: "2px solid var(--ink)", background: "var(--bg)" }}>
+            {/* Chat Header */}
+            <div className="px-3 sm:px-4 py-2 sm:py-3 flex justify-between items-center" style={{ borderBottom: "2px solid var(--ink)", background: "rgba(10,10,10,0.05)" }}>
+              <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: "600", textTransform: "uppercase" }}>Session Chat</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowProfileDialog(true)}
+                  style={{ background: "transparent", color: "var(--ink)", border: "1px solid var(--ink)", padding: "4px 8px", fontSize: "10px", cursor: "pointer", fontFamily: "monospace" }}
+                >
+                  [ PROFILE ]
+                </button>
+                <button
+                  onClick={() => setShowChat(false)}
+                  className="lg:hidden"
+                  style={{ background: "var(--ink)", color: "var(--bg)", border: "2px solid var(--ink)", padding: "4px 8px", fontSize: "10px", cursor: "pointer" }}
+                >
+                  [ CLOSE ]
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2" style={{ fontSize: "14px" }}>
               {messages.length === 0 && (
@@ -224,10 +263,8 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
                   key={msg.id}
                   style={
                     msg.type === "system"
-                      ? { color: "#888", fontFamily: "monospace", fontSize: "12px" }
-                      : msg.type === "peer"
-                      ? { color: "var(--accent-green)" }
-                      : { color: "var(--accent-blue)" }
+                      ? { color: "#888", fontFamily: "monospace", fontSize: "11px" }
+                      : { color: "var(--ink)" } // All non-system messages use ink color (no accent colors)
                   }
                 >
                   {msg.type === "system" ? (
@@ -242,8 +279,10 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
               ))}
               <div ref={chatEndRef} />
             </div>
-            <div className="p-3" style={{ borderTop: "var(--border)" }}>
-              <div className="flex gap-2">
+
+            {/* Chat Input */}
+            <div className="p-2 sm:p-3" style={{ borderTop: "2px solid var(--ink)" }}>
+              <div className="flex gap-0">
                 <input
                   type="text"
                   value={message}
@@ -253,13 +292,156 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
                   placeholder={connected ? "Type a message..." : "Connect to chat…"}
                   style={{ flex: 1, background: "var(--bg)", border: "var(--border)", padding: "8px 12px", fontFamily: "monospace", fontSize: "14px", opacity: connected ? 1 : 0.5 }}
                 />
-                <button onClick={send} disabled={!connected} className="btn" style={{ background: "var(--accent-blue)", color: "var(--bg)", padding: "8px 16px", fontFamily: "monospace", fontSize: "14px", fontWeight: "bold", opacity: connected ? 1 : 0.5 }}>
+                <button onClick={send} disabled={!connected} className="btn" style={{ background: "var(--accent-blue)", color: "var(--bg)", padding: "8px 21px", fontFamily: "monospace", fontSize: "14px", fontWeight: "bold", opacity: connected ? 1 : 0.5, width: "auto" }}>
                   SEND
                 </button>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Profile Dialog */}
+        {showProfileDialog && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            style={{ background: "rgba(0, 0, 0, 0.5)" }}
+            onClick={() => setShowProfileDialog(false)}
+          >
+            <div
+              className="w-full max-w-md"
+              style={{ background: "var(--bg)", border: "2px solid var(--ink)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Dialog Header */}
+              <div className="px-4 py-3 flex justify-between items-center" style={{ borderBottom: "2px solid var(--ink)" }}>
+                <span style={{ fontFamily: "monospace", fontSize: "14px", fontWeight: "700" }}>PROFILE</span>
+                <button
+                  onClick={() => setShowProfileDialog(false)}
+                  style={{ background: "transparent", color: "var(--ink)", border: "none", fontSize: "20px", cursor: "pointer" }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Dialog Content */}
+              <div className="p-4">
+                {/* User Info */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(10,10,10,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(10,10,10,0.6)" }}>
+                    <svg style={{ width: "32px", height: "32px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: "monospace", fontSize: "18px", fontWeight: "700" }}>you_dev</div>
+                    <div style={{ fontFamily: "monospace", fontSize: "12px", color: "#888" }}>// local host</div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 mb-4">
+                  <button
+                    style={{
+                      flex: 1,
+                      background: "var(--accent-blue)",
+                      color: "var(--bg)",
+                      padding: "8px 12px",
+                      fontFamily: "monospace",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      border: "2px solid var(--ink)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    [ VIEW PROFILE ]
+                  </button>
+                  <button
+                    style={{
+                      flex: 1,
+                      background: "transparent",
+                      color: "var(--ink)",
+                      padding: "8px 12px",
+                      fontFamily: "monospace",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      border: "2px solid var(--ink)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    [ EDIT PROFILE ]
+                  </button>
+                </div>
+
+                {/* Divider */}
+                <div style={{ height: "2px", background: "var(--ink)", margin: "16px 0" }} />
+
+                {/* Stacks Section */}
+                <div>
+                  <span style={{ fontFamily: "monospace", fontSize: "11px", color: "#888", textTransform: "uppercase" }}>Your Stack</span>
+                  <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    {userStacks.map((stack) => (
+                      <div
+                        key={stack}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          fontFamily: "monospace",
+                          fontSize: "12px",
+                          padding: "4px 8px",
+                          background: "rgba(10,10,10,0.1)",
+                          border: "1px solid var(--ink)",
+                        }}
+                      >
+                        <span>{stack}</span>
+                        <button
+                          onClick={() => handleRemoveStack(stack)}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink)", fontSize: "14px", lineHeight: 1 }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add Stack Input */}
+                  <div className="flex gap-2 mt-3">
+                    <input
+                      type="text"
+                      value={newStackInput}
+                      onChange={(e) => setNewStackInput(e.target.value)}
+                      onKeyPress={handleStackKeyPress}
+                      placeholder="Add stack..."
+                      style={{
+                        flex: 1,
+                        background: "var(--bg)",
+                        border: "2px solid var(--ink)",
+                        padding: "6px 10px",
+                        fontFamily: "monospace",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <button
+                      onClick={handleAddStack}
+                      style={{
+                        background: "var(--ink)",
+                        color: "var(--bg)",
+                        padding: "6px 12px",
+                        fontFamily: "monospace",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        border: "2px solid var(--ink)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      [ + ]
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   },

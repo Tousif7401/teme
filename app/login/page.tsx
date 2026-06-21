@@ -11,7 +11,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center" style={{ background: "var(--bg)", color: "var(--ink)" }}>
+    <div className="h-screen flex items-center justify-center relative" style={{ background: "var(--bg)", color: "var(--ink)" }}>
+      {/* Back Button - Top Left */}
+      <a
+        href="/"
+        className="absolute top-4 left-4 btn"
+        style={{
+          background: "var(--bg)",
+          color: "var(--ink)",
+          border: "var(--border)",
+          padding: "6px 12px",
+          fontFamily: "monospace",
+          fontSize: "12px",
+          fontWeight: "bold",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          width: "auto",
+        }}
+      >
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        BACK
+      </a>
+
       <div
         style={{
           width: "100%",

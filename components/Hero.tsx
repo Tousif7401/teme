@@ -66,11 +66,11 @@ export function Hero() {
           <div className="auth-buttons">
             <button
               className="btn github"
-              onClick={() => (window.location.href = "/api/auth/github")}
+              onClick={() => (window.location.href = "/login")}
               onMouseEnter={() => handleButtonHover(true)}
               onMouseLeave={() => handleButtonHover(false)}
             >
-              <span>[ Auth: GitHub ]</span>
+              <span>[ INITIAL CONNECTION ]</span>
               <svg
                 width="24"
                 height="24"
@@ -84,11 +84,11 @@ export function Hero() {
             </button>
             <button
               className="btn google"
-              onClick={() => (window.location.href = "/api/auth/google")}
+              onClick={() => (window.location.href = "/login")}
               onMouseEnter={() => handleButtonHover(true)}
               onMouseLeave={() => handleButtonHover(false)}
             >
-              <span>[ Auth: Google ]</span>
+              <span>[ INITIAL CONNECTION ]</span>
               <svg
                 width="24"
                 height="24"
@@ -127,16 +127,27 @@ export function Hero() {
           {/* Radar Content */}
           <div className="radar-content">
             <div className="scanline" style={scanlineStyle} />
-            <div style={{ color: "#888" }}>
+            <div
+              style={{
+                color:
+                  radarStatus === "ROUTING..." || radarStatus === "CHECKING VIBES..."
+                    ? "var(--ink)"
+                    : "#888",
+              }}
+            >
               <span className="tech-only">
-                IDENTITY
-                <br />
-                REQUIRED
+                {radarText === "HANDSHAKE READY" ? (
+                  <>HANDSHAKE<br />READY</>
+                ) : (
+                  <>IDENTITY<br />REQUIRED</>
+                )}
               </span>
               <span className="nontech-only">
-                VIBE CHECK
-                <br />
-                PENDING
+                {radarText === "HANDSHAKE READY" ? (
+                  <>HANDSHAKE<br />READY</>
+                ) : (
+                  <>VIBE CHECK<br />PENDING</>
+                )}
               </span>
             </div>
           </div>

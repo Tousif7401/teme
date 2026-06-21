@@ -28,20 +28,24 @@ export function OperatingModes() {
             <span className="tech-only">WEBRTC // ACTIVE</span>
             <span className="nontech-only">LIVE VIDEO</span>
           </div>
-          <div className="mode-body video-split">
-            <div className="cam-feed">
+          <div className="mode-body video-split-horizontal">
+            {/* Remote Peer Feed */}
+            <div className="cam-feed-horizontal">
               <span className="cam-label tech-only">REMOTE_PEER_CAM</span>
               <span className="cam-label nontech-only">THE BUILDER</span>
-              <span style={{ color: "var(--ink)", opacity: 0.8 }}>
+              <span style={{ color: "var(--ink)", opacity: 0.8, marginTop: "8px", fontSize: "14px" }}>
                 [ VIDEO SIGNAL ]
               </span>
             </div>
-            <div className="cam-feed" style={{ background: "var(--bg)" }}>
-              <span className="cam-label">YOU</span>
-              <span style={{ opacity: 0.2 }}>[ CAMERA ACTIVE ]</span>
-              <div className="cam-controls">
-                <button className="cam-btn">MUTE_MIC</button>
-                <button className="cam-btn skip">SKIP PEER (ESC)</button>
+
+            {/* Local Feed */}
+            <div className="cam-feed-horizontal local-feed">
+              <span className="cam-label">LOCAL_HOST_CAM</span>
+              <span style={{ opacity: 0.3, marginTop: "8px", fontSize: "14px" }}>[ CAMERA ACTIVE ]</span>
+              <div className="cam-controls-horizontal">
+                <button className="cam-btn-sm">MUTE</button>
+                <button className="cam-btn-sm">CAM OFF</button>
+                <button className="cam-btn-sm skip">SKIP (ESC)</button>
               </div>
             </div>
           </div>
@@ -55,70 +59,84 @@ export function OperatingModes() {
             <span className="nontech-only">[ MODE 02: CHAT + WHITEBOARD ]</span>
             <span>CONNECTED</span>
           </div>
-          <div className="mode-body terminal-split">
-            {/* Chat Section */}
-            <div className="terminal-chat">
-              <div className="sys-msg">[14:02] SYSTEM: Match established.</div>
+          <div className="mode-body chat-only-layout">
+            {/* Left: Peer Panel */}
+            <div className="peer-panel-preview">
+              {/* Avatar */}
+              <div className="peer-avatar-preview">
+                <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
 
-              <div className="tech-only">
-                <div>
-                  <span className="peer-msg">{"> "}dev_8x:</span> Anyone here
-                  good with React?
-                </div>
-                <div>
-                  <span className="host-msg">{"> "}you:</span> Yeah, what&apos;s
-                  the issue?
+              {/* Peer Name */}
+              <div className="peer-name-preview">
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--accent-green)", animation: "blink 1s infinite" }}></div>
+                <span>peer_8x92a</span>
+              </div>
+
+              {/* Divider */}
+              <div className="panel-divider"></div>
+
+              {/* Stack Tags */}
+              <div className="stack-tags-preview">
+                <span style={{ fontSize: "9px", color: "#888" }}>STACK</span>
+                <div className="tags-row">
+                  <span className="tag">React</span>
+                  <span className="tag">TS</span>
+                  <span className="tag">Node</span>
                 </div>
               </div>
 
-              <div className="nontech-only">
-                <div>
-                  <span className="host-msg">{"> "}you:</span> I have this app
-                  idea but zero coding skills.
-                </div>
-                <div>
-                  <span className="peer-msg">{"> "}dev_8x:</span> Let&apos;s map
-                  it out. Do you have a wireframe?
-                </div>
-              </div>
-            </div>
+              {/* View Profile Button */}
+              <div className="view-profile-btn">[ VIEW FULL PROFILE ]</div>
 
-            {/* Code/Whiteboard Split */}
-            <div className="terminal-scratchpad tech-only">
-              <div className="terminal-code">
-                <span style={{ color: "#F43F5E" }}>function</span>{" "}
-                <span style={{ color: "#38BDF8" }}>useFetch</span>() {`{`}
-                <br />
-                &nbsp;&nbsp;
-                <span style={{ color: "#F43F5E" }}>
-                  const
-                </span> [data, setData] = useState(<span style={{ color: "#38BDF8" }}>null</span>);
-                <br />
-                &nbsp;&nbsp;<span style={{ color: "#F43F5E" }}>return</span> data;
-                <br />
-                {`}`}
+              {/* Action Buttons */}
+              <div className="panel-actions">
+                <div className="action-btn-sm blue">[ UPGRADE TO VIDEO ]</div>
+                <div className="action-btn-sm red">[ END SESSION ]</div>
               </div>
-            </div>
 
-            <div className="whiteboard-view nontech-only">
-              <div className="sticky-note">
-                <strong>App Idea:</strong>
-                <br />
-                Tinder for finding Devs
+              {/* Your Profile */}
+              <div className="your-profile-section">
+                <span style={{ fontSize: "9px", color: "#888" }}>YOUR PROFILE</span>
+                <div className="profile-mini">
+                  <div className="avatar-small"></div>
+                  <span>you_dev</span>
+                </div>
               </div>
             </div>
 
-            {/* Terminal Input */}
-            <div className="terminal-input">
-              <span
-                style={{
-                  color: "var(--accent-green)",
-                  animation: "blink 1s infinite",
-                }}
-              >
-                _
-              </span>{" "}
-              type message...
+            {/* Right: Chat Area */}
+            <div className="chat-area-preview">
+              {/* Peer Status Bar */}
+              <div className="chat-status-bar">
+                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--accent-green)", animation: "blink 1s infinite" }}></div>
+                <span className="tech-only">peer_8x92a // connected via WebSocket</span>
+                <span className="nontech-only">peer_8x92a // connected</span>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="chat-messages-preview">
+                <div className="sys-line">[14:02:11] Peer connection established.</div>
+                <div className="sys-line">[14:02:12] peer_8x92a joined.</div>
+                <div className="msg-line">
+                  <span className="msg-prefix">&gt; peer_8x92a: </span>
+                  <span className="tech-only">Anyone here good with React?</span>
+                  <span className="nontech-only">Hey! What brings you here?</span>
+                </div>
+                <div className="msg-line">
+                  <span className="msg-prefix">&gt; you: </span>
+                  <span className="tech-only">Yeah, what's the issue?</span>
+                  <span className="nontech-only">Working on a side project.</span>
+                </div>
+              </div>
+
+              {/* Chat Input */}
+              <div className="chat-input-preview">
+                <span style={{ color: "#888" }}>Type a message...</span>
+                <div className="send-btn">SEND</div>
+              </div>
             </div>
           </div>
         </div>

@@ -6,10 +6,8 @@ export function Manifesto() {
   return (
     <section className="manifesto">
       <h2>
-        <span className="tech-only">NETWORKING IS BROKEN.</span>
-        <span className="tech-only">LINKEDIN IS CRINGE.</span>
-        <span className="nontech-only">TECH NETWORKING IS TOO EXCLUSIVE.</span>
-        <span className="nontech-only">WE FIXED IT.</span>
+        <span className="tech-only">NETWORKING IS BROKEN.<br />LINKEDIN IS CRINGE.</span>
+        <span className="nontech-only">TECH NETWORKING IS TOO EXCLUSIVE.<br />WE FIXED IT.</span>
       </h2>
       <p>
         <span className="tech-only">

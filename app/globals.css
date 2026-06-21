@@ -473,6 +473,13 @@ body[data-mode="nontech"] .mode-topbar {
   grid-template-rows: 1fr 1fr;
 }
 
+/* Horizontal layout matching VideoChatView */
+.video-split-horizontal {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+}
+
 .cam-feed {
   border-bottom: var(--border);
   display: flex;
@@ -489,6 +496,23 @@ body[data-mode="nontech"] .mode-topbar {
   background: var(--bg);
 }
 
+/* Horizontal feed styles */
+.cam-feed-horizontal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: repeating-linear-gradient(-45deg, #e5e5e5, #e5e5e5 10px, #f0f0ee 10px, #f0f0ee 20px);
+  border-right: 2px solid var(--ink);
+}
+
+.cam-feed-horizontal.local-feed {
+  background: var(--bg);
+  border-right: none;
+}
+
 .cam-label {
   position: absolute;
   top: 12px;
@@ -499,9 +523,19 @@ body[data-mode="nontech"] .mode-topbar {
   padding: 4px 8px;
   font-size: 10px;
   font-weight: bold;
+  font-family: monospace;
 }
 
 .cam-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.cam-controls-horizontal {
   position: absolute;
   bottom: 12px;
   left: 50%;
@@ -517,14 +551,243 @@ body[data-mode="nontech"] .mode-topbar {
   font-size: 11px;
   font-weight: bold;
   cursor: pointer;
+  font-family: monospace;
 }
 
-.cam-btn.skip {
+.cam-btn-sm {
+  background: var(--bg);
+  border: var(--border);
+  padding: 4px 8px;
+  font-size: 9px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: monospace;
+}
+
+.cam-btn.skip,
+.cam-btn-sm.skip {
   background: var(--accent-red);
   color: var(--ink);
 }
 
-/* Mockup 2: Terminal / Chat Split */
+/* Chat-Only Layout (MODE 02) - matches ChatOnlyView */
+.chat-only-layout {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+}
+
+/* Left Peer Panel */
+.peer-panel-preview {
+  width: 25%;
+  min-width: 120px;
+  background: var(--bg);
+  border-right: 2px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px;
+  gap: 12px;
+}
+
+.peer-avatar-preview {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(10, 10, 10, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(10, 10, 10, 0.6);
+}
+
+.peer-name-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.panel-divider {
+  width: 100%;
+  height: 2px;
+  background: var(--ink);
+  margin: 8px 0;
+}
+
+.stack-tags-preview {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  font-family: monospace;
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(10, 10, 10, 0.1);
+  border: 1px solid var(--ink);
+}
+
+.view-profile-btn {
+  width: 100%;
+  background: transparent;
+  color: var(--ink);
+  padding: 3px 6px;
+  font-family: monospace;
+  font-size: 8px;
+  font-weight: 600;
+  border: 2px solid var(--ink);
+  text-align: center;
+}
+
+.panel-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: bold;
+  border: 2px solid var(--ink);
+  text-align: center;
+}
+
+.action-btn-sm {
+  width: 100%;
+  padding: 4px 6px;
+  font-family: monospace;
+  font-size: 8px;
+  font-weight: bold;
+  border: 2px solid var(--ink);
+  text-align: center;
+}
+
+.action-btn.blue,
+.action-btn-sm.blue {
+  background: var(--accent-blue);
+  color: var(--bg);
+}
+
+.action-btn.red,
+.action-btn-sm.red {
+  background: var(--accent-red);
+  color: var(--ink);
+}
+
+.your-profile-section {
+  width: 100%;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 2px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.avatar-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(10, 10, 10, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(10, 10, 10, 0.6);
+}
+
+/* Right Chat Area */
+.chat-area-preview {
+  flex: 1;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-status-bar {
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--ink);
+  background: rgba(10, 10, 10, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chat-messages-preview {
+  flex: 1;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: monospace;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+.sys-line {
+  color: #888;
+  font-size: 11px;
+}
+
+.msg-line {
+  color: var(--ink);
+}
+
+.msg-prefix {
+  font-weight: 600;
+}
+
+.chat-input-preview {
+  padding: 10px 12px;
+  border-top: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.send-btn {
+  background: var(--accent-blue);
+  color: var(--bg);
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: bold;
+  border: 2px solid var(--ink);
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Mockup 2: Terminal / Chat Split (legacy) */
 .terminal-split {
   flex-grow: 1;
   background: var(--ink);
@@ -618,12 +881,12 @@ body[data-mode="nontech"] .peer-msg {
 .specs-sidebar {
   border-right: var(--border);
   padding: 32px 24px;
-  background: var(--accent-yellow);
+  background: var(--accent-red);
   color: var(--ink);
 }
 
 body[data-mode="nontech"] .specs-sidebar {
-  background: var(--accent-green);
+  background: var(--accent-purple);
 }
 
 .specs-sidebar h2 {
@@ -646,6 +909,7 @@ body[data-mode="nontech"] .specs-sidebar {
 
 .spec-label {
   font-size: 12px;
+  margin-top: -12px;
   margin-bottom: 16px;
   display: inline-block;
   border: 1px solid var(--ink);
@@ -656,6 +920,7 @@ body[data-mode="nontech"] .specs-sidebar {
 
 .spec-item h3 {
   font-size: 24px;
+  margin-top: 12px;
   margin-bottom: 12px;
 }
 

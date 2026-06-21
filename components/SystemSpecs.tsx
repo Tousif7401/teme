@@ -6,7 +6,7 @@ export function SystemSpecs() {
   return (
     <section className="specs-section">
       <div className="specs-sidebar">
-        <h2>
+        <h2 style={{ paddingTop: "52px" }}>
           <span className="tech-only">SYS.</span>
           <span className="tech-only">SPECS</span>
           <span className="nontech-only">THE</span>
@@ -15,8 +15,8 @@ export function SystemSpecs() {
       </div>
       <div className="specs-grid">
         <div className="spec-item">
-          <span className="spec-label tech-only">ENV.01</span>
-          <span className="spec-label nontech-only">RULE.01</span>
+          <span className="spec-label tech-only" >ENV.01</span>
+          <span className="spec-label nontech-only" >RULE.01</span>
           <h3 className="tech-only">Context Switching</h3>
           <h3 className="nontech-only">Zero Intimidation</h3>
           <p className="tech-only">
@@ -29,8 +29,8 @@ export function SystemSpecs() {
           </p>
         </div>
         <div className="spec-item">
-          <span className="spec-label tech-only">ENV.02</span>
-          <span className="spec-label nontech-only">RULE.02</span>
+          <span className="spec-label tech-only" >ENV.02</span>
+          <span className="spec-label nontech-only" >RULE.02</span>
           <h3 className="tech-only">Stack Filtering</h3>
           <h3 className="nontech-only">Filter by Interest</h3>
           <p className="tech-only">
@@ -52,8 +52,8 @@ export function SystemSpecs() {
           </p>
         </div>
         <div className="spec-item">
-          <span className="spec-label tech-only">ENV.03</span>
-          <span className="spec-label nontech-only">RULE.03</span>
+          <span className="spec-label tech-only" >ENV.03</span>
+          <span className="spec-label nontech-only" >RULE.03</span>
           <h3 className="tech-only">Zero Clutter</h3>
           <h3 className="nontech-only">No Fake Profiles</h3>
           <p className="tech-only">

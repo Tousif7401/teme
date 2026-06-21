@@ -3,6 +3,10 @@
 import React from "react";
 
 export function Footer() {
+  const handleClick = () => {
+    window.location.href = "/login";
+  };
+
   return (
     <footer>
       <div className="footer-cta">
@@ -10,7 +14,7 @@ export function Footer() {
           <span className="tech-only">READY TO EXECUTE?</span>
           <span className="nontech-only">READY TO VIBE?</span>
         </h2>
-        <button className="btn primary">
+        <button className="btn primary" onClick={handleClick}>
           <span className="tech-only">[ INITIATE CONNECTION ]</span>
           <span className="nontech-only">[ START MATCHING ]</span>
         </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 const faqItems = [
   {
@@ -24,6 +24,12 @@ const faqItems = [
 ];
 
 export function FAQ() {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  const toggleExpand = (index: number) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
+
   return (
     <section className="faq-section">
       <div className="faq-container">
@@ -31,11 +37,20 @@ export function FAQ() {
 
         {faqItems.map((item, index) => (
           <div key={index} className="faq-item">
-            <div className="faq-cmd">
+            <div
+              className="faq-cmd"
+              onClick={() => toggleExpand(index)}
+              style={{ cursor: "pointer", userSelect: "none" }}
+            >
               <span className="tech-only">{item.commandTech}</span>
               <span className="nontech-only">{item.commandNontech}</span>
+              <span style={{ marginLeft: "auto", fontSize: "18px" }}>
+                {expandedIndex === index ? "−" : "+"}
+              </span>
             </div>
-            <div className="faq-output">{item.output}</div>
+            {expandedIndex === index && (
+              <div className="faq-output">{item.output}</div>
+            )}
           </div>
         ))}
       </div>
