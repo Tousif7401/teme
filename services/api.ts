@@ -1,7 +1,10 @@
 /**
  * API Service Layer — wired to the live DevMatch backend.
- * Uses bearer-token auth. Provisions a transparent guest account so the
- * UI "just works" without a separate login screen.
+ *
+ * Two kinds of session:
+ *  - Logged-in (Google OAuth): tokens in localStorage → persists across reloads/tabs.
+ *  - Guest (anonymous "just START"): tokens in sessionStorage → per-tab, easy to test.
+ * The token getters prefer a real login over a guest session.
  */
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE || "https://13.206.6.189.nip.io").replace(/\/$/, "");
@@ -9,21 +12,37 @@ const V1 = `${API_BASE}/api/v1`;
 
 const ACCESS = "teme_access";
 const REFRESH = "teme_refresh";
+const LS = () => (typeof window === "undefined" ? null : window.localStorage);
+const SS = () => (typeof window === "undefined" ? null : window.sessionStorage);
 
 export const tokens = {
   get access() {
-    return typeof window === "undefined" ? null : sessionStorage.getItem(ACCESS);
+    return LS()?.getItem(ACCESS) || SS()?.getItem(ACCESS) || null;
   },
   get refresh() {
-    return typeof window === "undefined" ? null : sessionStorage.getItem(REFRESH);
+    return LS()?.getItem(REFRESH) || SS()?.getItem(REFRESH) || null;
   },
-  set(a: string, r: string) {
-    sessionStorage.setItem(ACCESS, a);
-    sessionStorage.setItem(REFRESH, r);
+  get isLoggedIn() {
+    return !!LS()?.getItem(ACCESS);
+  },
+  saveLogin(a: string, r: string) {
+    LS()?.setItem(ACCESS, a);
+    LS()?.setItem(REFRESH, r);
+  },
+  saveGuest(a: string, r: string) {
+    SS()?.setItem(ACCESS, a);
+    SS()?.setItem(REFRESH, r);
+  },
+  /** Persist refreshed tokens to wherever the active session lives. */
+  saveRefreshed(a: string, r: string) {
+    if (this.isLoggedIn) this.saveLogin(a, r);
+    else this.saveGuest(a, r);
   },
   clear() {
-    sessionStorage.removeItem(ACCESS);
-    sessionStorage.removeItem(REFRESH);
+    [LS(), SS()].forEach((s) => {
+      s?.removeItem(ACCESS);
+      s?.removeItem(REFRESH);
+    });
   },
 };
 
@@ -51,7 +70,49 @@ export interface AuthUser {
   ageVerified: boolean;
 }
 
+const DEFAULT_PROFILE = () => ({
+  displayName: `dev_${rand().slice(0, 5)}`,
+  techStack: [],
+  role: "fullstack",
+  interestedIn: [],
+  region: "in",
+  languages: ["en"],
+});
+
+async function ensureProfile() {
+  try {
+    await req("/profiles/me");
+  } catch {
+    await req("/profiles/me", { method: "PUT", body: DEFAULT_PROFILE() });
+  }
+}
+
 export const backend = {
+  /** Where the browser sends the user to start Google sign-in. */
+  googleLoginUrl: () => `${V1}/auth/google`,
+
+  /** Store tokens received from the OAuth callback as a persistent login. */
+  setLoginTokens(a: string, r: string) {
+    tokens.saveLogin(a, r);
+  },
+
+  isLoggedIn: () => tokens.isLoggedIn,
+
+  /** Make the CURRENT (logged-in) account match-ready: age gate + profile. Returns user id. */
+  async ensureReady(): Promise<string> {
+    await req("/auth/verify-age", { method: "POST" }).catch(() => undefined);
+    // Refresh so the access token carries ageVerified=true.
+    const refreshed = await req<{ accessToken: string; refreshToken: string }>("/auth/refresh", {
+      method: "POST",
+      body: { refreshToken: tokens.refresh },
+      auth: false,
+    });
+    tokens.saveRefreshed(refreshed.accessToken, refreshed.refreshToken);
+    const me = await req<AuthUser>("/auth/me");
+    await ensureProfile();
+    return me.id;
+  },
+
   /** Create a ready-to-match guest account (register → verify age → profile). Returns user id. */
   async provisionGuest(): Promise<string> {
     const email = `guest_${rand()}${rand()}@devmatch.guest`;
@@ -61,33 +122,23 @@ export const backend = {
       body: { email, password },
       auth: false,
     });
-    tokens.set(reg.accessToken, reg.refreshToken);
-
+    tokens.saveGuest(reg.accessToken, reg.refreshToken);
     await req("/auth/verify-age", { method: "POST" });
-    // Re-login so the access token carries ageVerified=true.
     const login = await req<{ accessToken: string; refreshToken: string }>("/auth/login", {
       method: "POST",
       body: { email, password },
       auth: false,
     });
-    tokens.set(login.accessToken, login.refreshToken);
-
+    tokens.saveGuest(login.accessToken, login.refreshToken);
     const me = await req<AuthUser>("/auth/me");
-    // A default profile so matchmaking accepts us. Region "in" so guests match each other.
-    await req("/profiles/me", {
-      method: "PUT",
-      body: {
-        displayName: `dev_${rand().slice(0, 5)}`,
-        techStack: [],
-        role: "fullstack",
-        interestedIn: [],
-        region: "in",
-        languages: ["en"],
-      },
-    });
+    await ensureProfile();
     return me.id;
   },
 
+  me: () => req<AuthUser>("/auth/me"),
+  logout: () => {
+    tokens.clear();
+  },
   turnCredentials: () => req<{ iceServers: RTCIceServer[]; ttl: number }>("/turn/credentials"),
   report: (reportedId: string, reason: string) =>
     req("/reports", { method: "POST", body: { reportedId, reason } }),
