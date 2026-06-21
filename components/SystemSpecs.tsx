@@ -1,59 +1,71 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils";
 
-export interface SystemSpecsProps {
-  className?: string;
-}
-
-const SystemSpecs = React.forwardRef<HTMLElement, SystemSpecsProps>(({ className }, ref) => {
+export function SystemSpecs() {
   return (
-    <section
-      ref={ref}
-      className={cn("grid grid-cols-1 lg:grid-cols-[300px_1fr] border-b-2 border-ink", className)}
-    >
-      {/* Sidebar */}
-      <div className="border-r-0 border-b-2 border-ink lg:border-b-0 lg:border-r-2 bg-accent-yellow text-ink px-6 py-8 lg:px-6 lg:py-8">
-        <h2 className="font-display text-[48px] leading-none">
-          SYS.<br />SPECS
+    <section className="specs-section">
+      <div className="specs-sidebar">
+        <h2>
+          <span className="tech-only">SYS.</span>
+          <span className="tech-only">SPECS</span>
+          <span className="nontech-only">THE</span>
+          <span className="nontech-only">VIBE</span>
         </h2>
       </div>
-
-      {/* Specs Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3">
-        <div className="border-r-0 border-b-2 border-ink lg:border-b-0 lg:border-r-2 px-6 py-8 lg:px-6 lg:py-8">
-          <span className="text-caption px-2 py-1 border border-ink font-semibold inline-block mb-4">
-            ENV.01
-          </span>
-          <h3 className="font-display text-[24px] mb-3">Context Switching</h3>
-          <p className="text-body text-ink">
-            Start in text mode. If the vibe is right, upgrade to video instantly. Downgrade back to text if you need to focus. Total environmental control.
+      <div className="specs-grid">
+        <div className="spec-item">
+          <span className="spec-label tech-only">ENV.01</span>
+          <span className="spec-label nontech-only">RULE.01</span>
+          <h3 className="tech-only">Context Switching</h3>
+          <h3 className="nontech-only">Zero Intimidation</h3>
+          <p className="tech-only">
+            Start in text mode. Upgrade to video instantly. Downgrade back to
+            text if you need to focus. Total environmental control.
+          </p>
+          <p className="nontech-only">
+            Start entirely in text chat. If you vibe with the developer, turn
+            your camera on. If not, just hit skip and match with someone else.
           </p>
         </div>
-        <div className="border-r-0 border-b-2 border-ink lg:border-b-0 lg:border-r-2 px-6 py-8 lg:px-6 lg:py-8">
-          <span className="text-caption px-2 py-1 border border-ink font-semibold inline-block mb-4">
-            ENV.02
-          </span>
-          <h3 className="font-display text-[24px] mb-3">Stack Filtering</h3>
-          <p className="text-body text-ink">
-            Looking for a Python dev? Set <code className="bg-bg px-1 border border-ink">require(&apos;python&apos;)</code>. Don&apos;t waste time explaining frameworks to the wrong crowd.
+        <div className="spec-item">
+          <span className="spec-label tech-only">ENV.02</span>
+          <span className="spec-label nontech-only">RULE.02</span>
+          <h3 className="tech-only">Stack Filtering</h3>
+          <h3 className="nontech-only">Filter by Interest</h3>
+          <p className="tech-only">
+            Looking for a Python dev? Set{" "}
+            <code
+              style={{
+                background: "var(--bg)",
+                padding: "0 4px",
+                border: "1px solid var(--ink)",
+              }}
+            >
+              require(&apos;python&apos;)
+            </code>
+            . Don&apos;t waste time explaining frameworks to the wrong crowd.
+          </p>
+          <p className="nontech-only">
+            Want to talk about AI, Web3, or Gaming? Set your filters so you only
+            match with developers building in that specific space.
           </p>
         </div>
-        <div className="px-6 py-8 lg:px-6 lg:py-8">
-          <span className="text-caption px-2 py-1 border border-ink font-semibold inline-block mb-4">
-            ENV.03
-          </span>
-          <h3 className="font-display text-[24px] mb-3">Zero Clutter</h3>
-          <p className="text-body text-ink">
-            No profiles to curate. Authenticate to prove you aren&apos;t a bot, then drop straight into the peer pool.
+        <div className="spec-item">
+          <span className="spec-label tech-only">ENV.03</span>
+          <span className="spec-label nontech-only">RULE.03</span>
+          <h3 className="tech-only">Zero Clutter</h3>
+          <h3 className="nontech-only">No Fake Profiles</h3>
+          <p className="tech-only">
+            No profiles to curate. Authenticate to prove you aren&apos;t a bot,
+            then drop straight into the peer pool.
+          </p>
+          <p className="nontech-only">
+            No bloated LinkedIn resumes or fake influencer bios. Everyone
+            verifies via Google or Github. Real people, real conversations.
           </p>
         </div>
       </div>
     </section>
   );
-});
-
-SystemSpecs.displayName = "SystemSpecs";
-
-export { SystemSpecs };
+}

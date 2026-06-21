@@ -42,20 +42,23 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
     };
 
     return (
-      <div ref={ref} className={cn("h-screen flex flex-col bg-bg", className)}>
+      <div ref={ref} className={cn("h-screen flex flex-col", className)} style={{ background: "var(--bg)", color: "var(--ink)" }}>
         {/* Top Bar */}
-        <div className="border-b-2 border-ink bg-ink text-bg px-4 py-2 flex justify-between items-center">
+        <div className="px-4 py-2 flex justify-between items-center" style={{ background: "var(--ink)", color: "var(--bg)", borderBottom: "var(--border)" }}>
           <div className="flex items-center gap-3">
-            <div className="h-2 w-2 rounded-full bg-accent-green animate-blink" />
-            <span className="font-display text-lg font-extrabold tracking-tighter">TEME</span>
+            <div className="blinking-dot" style={{ width: "12px", height: "12px", borderWidth: "2px" }} />
+            <span style={{ fontFamily: "var(--font-display)", fontSize: "18px", fontWeight: "800", letterSpacing: "-0.05em" }}>
+              TEME
+            </span>
           </div>
           <div className="flex items-center gap-4">
-            <div className="font-mono text-caption text-[#888]">
-              SESSION: <span className="text-accent-blue">0x7F3A2C</span>
+            <div style={{ fontFamily: "monospace", fontSize: "12px", color: "#888" }}>
+              SESSION: <span style={{ color: "var(--accent-blue)" }}>0x7F3A2C</span>
             </div>
             <button
               onClick={() => console.log("Report peer clicked")}
-              className="px-3 py-1 bg-accent-red text-ink font-mono text-caption font-bold border-2 border-ink hover:bg-ink hover:text-bg transition-colors"
+              className="btn"
+              style={{ background: "var(--accent-red)", color: "var(--ink)", padding: "4px 12px", fontSize: "12px" }}
             >
               [ REPORT ]
             </button>
@@ -65,62 +68,80 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left: Video Feeds Side by Side */}
-          <div className="flex-1 flex border-r-2 border-ink min-w-0">
+          <div className="flex-1 flex min-w-0" style={{ borderRight: "var(--border)" }}>
             {/* Remote Peer Feed */}
-            <div className="flex-1 border-r-2 border-ink relative bg-[repeating-linear-gradient(-45deg,#e5e5e5,#e5e5e5_10px,#f0f0ee_10px,#f0f0ee_20px)] flex items-center justify-center">
-              <div className="absolute top-3 left-3 bg-ink text-bg border-2 border-ink px-2 py-1 text-caption font-mono font-bold">
+            <div className="flex-1 relative flex items-center justify-center" style={{ borderRight: "var(--border)", background: "repeating-linear-gradient(-45deg, #e5e5e5, #e5e5e5 10px, #f0f0ee 10px, #f0f0ee 20px)" }}>
+              <div className="px-2 py-1 text-caption font-bold absolute top-3 left-3" style={{ background: "var(--ink)", color: "var(--bg)", border: "var(--border)", fontSize: "10px" }}>
                 REMOTE_PEER_CAM
               </div>
               <div className="flex flex-col items-center gap-2">
-                <div className="w-16 h-16 rounded-full bg-ink/20 flex items-center justify-center text-ink/60">
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(10,10,10,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(10,10,10,0.6)" }}>
+                  <svg style={{ width: "32px", height: "32px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <span className="font-display text-ink/60 text-sm">peer_dev</span>
+                <span style={{ fontFamily: "var(--font-display)", color: "rgba(10,10,10,0.6)", fontSize: "14px" }}>peer_dev</span>
               </div>
             </div>
 
             {/* Local Feed */}
-            <div className="flex-1 relative bg-bg flex items-center justify-center">
-              <div className="absolute top-3 left-3 bg-ink text-bg border-2 border-ink px-2 py-1 text-caption font-mono font-bold">
+            <div className="flex-1 relative flex items-center justify-center" style={{ background: "var(--bg)" }}>
+              <div className="px-2 py-1 text-caption font-bold absolute top-3 left-3" style={{ background: "var(--ink)", color: "var(--bg)", border: "var(--border)", fontSize: "10px" }}>
                 LOCAL_HOST_CAM
               </div>
               {isCameraOff ? (
-                <div className="w-16 h-16 rounded-full bg-ink/20 flex items-center justify-center text-ink/60">
-                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(10,10,10,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(10,10,10,0.6)" }}>
+                  <svg style={{ width: "32px", height: "32px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
               ) : (
-                <div className="w-48 h-32 rounded bg-ink/10 border-2 border-ink/20 flex items-center justify-center">
-                  <span className="font-mono text-caption text-ink/40">[ CAMERA ACTIVE ]</span>
+                <div style={{ width: "192px", height: "128px", borderRadius: "4px", background: "rgba(10,10,10,0.1)", border: "var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontFamily: "monospace", fontSize: "12px", color: "rgba(10,10,10,0.4)" }}>[ CAMERA ACTIVE ]</span>
                 </div>
               )}
 
-              {/* Media Controls - positioned at bottom of local feed */}
+              {/* Media Controls */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
                 <button
                   onClick={() => setIsMicMuted(!isMicMuted)}
-                  className={cn(
-                    "px-3 py-1.5 text-[11px] font-mono font-bold border-2 border-ink transition-colors",
-                    isMicMuted ? "bg-accent-red text-ink" : "bg-bg text-ink hover:bg-ink hover:text-bg"
-                  )}
+                  className="cam-btn"
+                  style={{
+                    background: isMicMuted ? "var(--accent-red)" : "var(--bg)",
+                    color: "var(--ink)",
+                    border: "var(--border)",
+                    padding: "6px 12px",
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                  }}
                 >
                   {isMicMuted ? "UNMUTE" : "MUTE"}
                 </button>
                 <button
                   onClick={() => setIsCameraOff(!isCameraOff)}
-                  className={cn(
-                    "px-3 py-1.5 text-[11px] font-mono font-bold border-2 border-ink transition-colors",
-                    isCameraOff ? "bg-accent-red text-ink" : "bg-bg text-ink hover:bg-ink hover:text-bg"
-                  )}
+                  className="cam-btn"
+                  style={{
+                    background: isCameraOff ? "var(--accent-red)" : "var(--bg)",
+                    color: "var(--ink)",
+                    border: "var(--border)",
+                    padding: "6px 12px",
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                  }}
                 >
                   {isCameraOff ? "CAM ON" : "CAM OFF"}
                 </button>
                 <button
                   onClick={onSkipPeer}
-                  className="px-3 py-1.5 text-[11px] font-mono font-bold bg-accent-red text-ink border-2 border-ink hover:bg-ink hover:text-bg transition-colors"
+                  className="cam-btn"
+                  style={{
+                    background: "var(--accent-red)",
+                    color: "var(--ink)",
+                    border: "var(--border)",
+                    padding: "6px 12px",
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                  }}
                 >
                   SKIP (ESC)
                 </button>
@@ -129,26 +150,27 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
           </div>
 
           {/* Right: Session Chat */}
-          <div className="w-[400px] flex flex-col border-l-2 border-ink bg-bg">
-            <div className="px-4 py-3 border-b-2 border-ink bg-ink/5">
-              <span className="font-mono text-caption font-semibold text-ink uppercase">Session Chat</span>
+          <div style={{ width: "400px", display: "flex", flexDirection: "column", borderLeft: "var(--border)", background: "var(--bg)" }}>
+            <div className="px-4 py-3" style={{ borderBottom: "var(--border)", background: "rgba(10,10,10,0.05)" }}>
+              <span style={{ fontFamily: "monospace", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>Session Chat</span>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2" style={{ fontSize: "14px" }}>
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={cn(
-                    "text-sm",
-                    msg.type === "system" && "text-[#888] font-mono text-caption",
-                    msg.type === "peer" && "text-accent-green",
-                    msg.type === "you" && "text-accent-blue"
-                  )}
+                  style={
+                    msg.type === "system"
+                      ? { color: "#888", fontFamily: "monospace", fontSize: "12px" }
+                      : msg.type === "peer"
+                      ? { color: "var(--accent-green)" }
+                      : { color: "var(--accent-blue)" }
+                  }
                 >
                   {msg.type === "system" ? (
                     <span>{msg.text}</span>
                   ) : (
                     <span>
-                      <span className="font-mono">
+                      <span style={{ fontFamily: "monospace" }}>
                         {msg.type === "peer" ? "> peer_8x92a: " : "> you: "}
                       </span>
                       {msg.text}
@@ -158,7 +180,7 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
               ))}
               <div ref={chatEndRef} />
             </div>
-            <div className="p-3 border-t-2 border-ink">
+            <div className="p-3" style={{ borderTop: "var(--border)" }}>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -166,11 +188,26 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Type a message..."
-                  className="flex-1 bg-bg border-2 border-ink px-3 py-2 font-mono text-sm focus:outline-none focus:bg-ink/5"
+                  style={{
+                    flex: 1,
+                    background: "var(--bg)",
+                    border: "var(--border)",
+                    padding: "8px 12px",
+                    fontFamily: "monospace",
+                    fontSize: "14px",
+                  }}
                 />
                 <button
                   onClick={handleSendMessage}
-                  className="px-4 py-2 bg-accent-blue text-bg font-mono text-sm font-bold border-2 border-ink hover:bg-ink hover:text-bg transition-colors"
+                  className="btn"
+                  style={{
+                    background: "var(--accent-blue)",
+                    color: "var(--bg)",
+                    padding: "8px 16px",
+                    fontFamily: "monospace",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                  }}
                 >
                   SEND
                 </button>

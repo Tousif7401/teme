@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import { ModeProvider } from "@/components/ModeProvider";
 
 const bricolageGrotesque = Bricolage_Grotesque({
   weight: ["700", "800"],
@@ -19,8 +20,8 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TEME | P2P Dev Roulette",
-  description: "A volatile, anonymous 1-on-1 network exclusively for developers. Verified GitHub/Google OAuth required. No bots. No trolls.",
+  title: "TEME | P2P Dev & Idea Roulette",
+  description: "A volatile, anonymous 1-on-1 network for developers and idea pitchers. Find co-founders, pair program, or just vibe with verified peers.",
 };
 
 export default function RootLayout({
@@ -31,6 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${bricolageGrotesque.variable} ${ibmPlexMono.variable}`}>
+        <ModeProvider />
         {children}
       </body>
     </html>

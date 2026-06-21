@@ -1,31 +1,27 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils";
+import { useAppStore } from "@/store/useAppStore";
 
-export interface MarqueeProps {
-  className?: string;
-}
+export function Marquee() {
+  const { landingMode } = useAppStore();
 
-const Marquee = React.forwardRef<HTMLDivElement, MarqueeProps>(({ className }, ref) => {
+  const marqueeTech =
+    "/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///";
+  const marqueeNontech =
+    "/// FIND A CO-FOUNDER /// PITCH YOUR IDEA /// ZERO CODING REQUIRED /// JUST VIBES ///";
+
+  const content =
+    landingMode === "tech"
+      ? `${marqueeTech}${marqueeTech}`
+      : `${marqueeNontech}${marqueeNontech}`;
+
   return (
-    <div
-      ref={ref}
-      className={cn(
-        "overflow-hidden whitespace-nowrap bg-accent-red text-ink font-semibold border-b-2 border-ink py-2",
-        className
-      )}
-    >
-      <div className="flex gap-8 animate-scroll">
-        <span>/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///</span>
-        <span>/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///</span>
-        <span>/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///</span>
-        <span>/// P2P DEV ROULETTE /// WEBRTC INITIATED /// ZERO BOTS /// STRICT OAUTH ///</span>
+    <div className="marquee-container">
+      <div className="marquee-content">
+        <span className="tech-only">{content}</span>
+        <span className="nontech-only">{content}</span>
       </div>
     </div>
   );
-});
-
-Marquee.displayName = "Marquee";
-
-export { Marquee };
+}
