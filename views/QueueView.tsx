@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useAppStore } from "@/store/useAppStore";
-import { socketService } from "@/services/socket";
 
 interface TerminalLine {
   id: number;
