@@ -1,15 +1,20 @@
-import { Header } from "@/components/Header";
-import { Marquee } from "@/components/Marquee";
-import { Hero } from "@/components/Hero";
-import { Manifesto } from "@/components/Manifesto";
-import { OperatingModes } from "@/components/OperatingModes";
-import { SystemSpecs } from "@/components/SystemSpecs";
-import { FAQ } from "@/components/FAQ";
-import { Footer } from "@/components/Footer";
+"use client";
+
+import React from "react";
+import {
+  Header,
+  Marquee,
+  Hero,
+  Manifesto,
+  OperatingModes,
+  SystemSpecs,
+  FAQ,
+  Footer,
+} from "@/components";
 
 export function LandingView() {
   return (
-    <>
+    <div className="master-frame">
       <Header />
       <Marquee />
       <Hero />
@@ -18,6 +23,6 @@ export function LandingView() {
       <SystemSpecs />
       <FAQ />
       <Footer />
-    </>
+    </div>
   );
 }

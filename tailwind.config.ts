@@ -13,9 +13,10 @@ const config: Config = {
         bg: "#F0F0EE", // Newsprint off-white
         ink: "#0A0A0A", // Deep black
         "accent-red": "#FF3366", // Aggressive action color
-        "accent-green": "#00E676", // Live status color
+        "accent-green": "#00E676", // Live status color (tech mode)
         "accent-blue": "#2962FF", // Secondary action
         "accent-yellow": "#FFEA00", // Warning/Highlight
+        "accent-purple": "#B026FF", // Non-tech mode accent
       },
       fontFamily: {
         // Bold, impactful typography

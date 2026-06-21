@@ -56,51 +56,51 @@ const ChatOnlyView = React.forwardRef<HTMLDivElement, ChatOnlyViewProps>(
       }
     };
 
-    // Get current timestamp for display
     const getCurrentTimestamp = () => {
       const now = new Date();
       return `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
     };
 
     return (
-      <div ref={ref} className={cn("h-screen flex flex-col bg-ink text-bg font-mono", className)}>
+      <div ref={ref} className={cn("h-screen flex flex-col font-mono", className)} style={{ background: "var(--ink)", color: "var(--bg)" }}>
         {/* Top Bar */}
-        <div className="border-b border-[#333] bg-ink text-bg px-4 py-3 flex justify-between items-center">
+        <div className="px-4 py-3 flex justify-between items-center" style={{ borderBottom: "2px solid #333", background: "var(--ink)", color: "var(--bg)" }}>
           <div className="flex items-center gap-4">
             <div className="flex gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-accent-red" />
-              <span className="w-2 h-2 rounded-full bg-accent-yellow" />
-              <span className="w-2 h-2 rounded-full bg-accent-green" />
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--accent-red)" }} />
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--accent-yellow)" }} />
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--accent-green)" }} />
             </div>
-            <span className="text-caption font-semibold">MODE 02: TERMINAL + CHAT</span>
+            <span style={{ fontSize: "12px", fontWeight: "600" }}>MODE 02: TERMINAL + CHAT</span>
           </div>
           <div className="flex items-center gap-4">
-            <div className="h-2 w-2 rounded-full bg-accent-green animate-blink" />
-            <span className="text-caption text-accent-green">WSS // CONNECTED</span>
+            <div className="blinking-dot" style={{ width: "8px", height: "8px", borderWidth: "2px" }} />
+            <span style={{ fontSize: "12px" }}>WSS // CONNECTED</span>
           </div>
         </div>
 
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left: Terminal Chat */}
-          <div className="flex-1 flex flex-col border-r border-[#333] min-w-0">
+          <div className="flex-1 flex flex-col min-w-0" style={{ borderRight: "1px dashed #444" }}>
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+            <div className="flex-1 overflow-y-auto p-6 space-y-3" style={{ fontSize: "15px" }}>
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={cn(
-                    "text-[15px]",
-                    msg.type === "system" && "text-[#888]",
-                    msg.type === "peer" && "text-accent-green",
-                    msg.type === "you" && "text-accent-blue"
-                  )}
+                  style={
+                    msg.type === "system"
+                      ? { color: "#888" }
+                      : msg.type === "peer"
+                      ? { color: "var(--accent-green)" }
+                      : { color: "var(--accent-blue)" }
+                  }
                 >
                   {msg.type === "system" ? (
                     <span>{msg.text}</span>
                   ) : (
                     <span>
-                      <span className="font-bold">
+                      <span style={{ fontWeight: "bold" }}>
                         {msg.type === "peer" ? "> peer_8x92a: " : "> you: "}
                       </span>
                       {msg.text}
@@ -112,34 +112,35 @@ const ChatOnlyView = React.forwardRef<HTMLDivElement, ChatOnlyViewProps>(
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-dashed border-[#444] p-4">
+            <div className="p-4" style={{ borderTop: "1px dashed #444" }}>
               <div className="flex gap-3 font-bold">
-                <span className="text-accent-green animate-blink">_</span>
+                <span className="animate-blink" style={{ color: "var(--accent-green)" }}>_</span>
                 <input
                   type="text"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="type message..."
-                  className="flex-1 bg-transparent border-none focus:outline-none text-bg placeholder-[#888]"
+                  className="flex-1 bg-transparent border-none focus:outline-none placeholder-[#888]"
+                  style={{ color: "var(--bg)" }}
                 />
               </div>
             </div>
           </div>
 
           {/* Right: Code Scratchpad */}
-          <div className="w-[500px] flex flex-col border-l border-[#333] bg-ink text-bg">
+          <div style={{ width: "500px", display: "flex", flexDirection: "column", borderLeft: "1px solid #333", background: "var(--ink)", color: "var(--bg)" }}>
             {/* Scratchpad Header */}
-            <div className="border-b border-[#333] px-4 py-3 flex justify-between items-center bg-[#111]">
-              <span className="text-caption font-semibold text-[#888]">// SHARED SCRATCHPAD (LIVE SYNC)</span>
+            <div className="px-4 py-3 flex justify-between items-center" style={{ borderBottom: "1px solid #333", background: "#111" }}>
+              <span style={{ fontSize: "12px", fontWeight: "600", color: "#888" }}>// SHARED SCRATCHPAD (LIVE SYNC)</span>
               <div className="flex gap-2">
-                <span className="w-2 h-2 rounded-full bg-accent-green animate-blink" />
-                <span className="text-caption text-accent-green">SYNCED</span>
+                <div className="blinking-dot" style={{ width: "8px", height: "8px", borderWidth: "2px" }} />
+                <span style={{ fontSize: "12px" }}>SYNCED</span>
               </div>
             </div>
 
             {/* Code Editor */}
-            <div className="flex-1 p-6 text-[15px] leading-relaxed overflow-auto bg-[#111]">
+            <div className="flex-1 p-6 overflow-auto" style={{ fontSize: "15px", lineHeight: "1.5", background: "#111" }}>
               <textarea
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -155,22 +156,38 @@ const ChatOnlyView = React.forwardRef<HTMLDivElement, ChatOnlyViewProps>(
             </div>
 
             {/* Status Bar */}
-            <div className="border-t border-[#333] px-4 py-3 bg-ink flex items-center justify-between">
-              <div className="flex gap-4 text-caption">
-                <span className="text-[#888]">LANG: JavaScript</span>
-                <span className="text-[#888]">LN: 14</span>
-                <span className="text-[#888]">COL: 42</span>
+            <div className="px-4 py-3 flex items-center justify-between" style={{ borderTop: "1px solid #333", background: "var(--ink)" }}>
+              <div className="flex gap-4" style={{ fontSize: "12px" }}>
+                <span style={{ color: "#888" }}>LANG: JavaScript</span>
+                <span style={{ color: "#888" }}>LN: 14</span>
+                <span style={{ color: "#888" }}>COL: 42</span>
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={onRequestVideo}
-                  className="px-4 py-1.5 bg-accent-blue text-bg text-caption font-bold border border-accent-blue hover:bg-bg hover:text-ink transition-colors"
+                  className="btn"
+                  style={{
+                    background: "var(--accent-blue)",
+                    color: "var(--bg)",
+                    padding: "6px 16px",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    border: "var(--border)",
+                  }}
                 >
                   [ UPGRADE TO VIDEO ]
                 </button>
                 <button
                   onClick={onEndSession}
-                  className="px-4 py-1.5 bg-accent-red text-ink text-caption font-bold border border-accent-red hover:bg-bg hover:text-ink transition-colors"
+                  className="btn"
+                  style={{
+                    background: "var(--accent-red)",
+                    color: "var(--ink)",
+                    padding: "6px 16px",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    border: "var(--border)",
+                  }}
                 >
                   [ END SESSION ]
                 </button>
