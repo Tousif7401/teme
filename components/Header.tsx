@@ -5,18 +5,27 @@ import { useAppStore } from "@/store/useAppStore";
 
 export function Header() {
   const { landingMode, setLandingMode } = useAppStore();
-  const [onlineCount, setOnlineCount] = useState(1042);
+  const [onlineCount, setOnlineCount] = useState<number | null>(null);
 
-  // Simulate online counter fluctuation
+  // Real online count from the backend, polled every 5s.
   useEffect(() => {
-    const interval = setInterval(() => {
-      setOnlineCount((prev) => {
-        const diff = Math.floor(Math.random() * 5) - 2;
-        return Math.max(900, Math.min(1200, prev + diff));
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
+    const base = (process.env.NEXT_PUBLIC_API_BASE || "https://13.206.6.189.nip.io").replace(/\/$/, "");
+    let alive = true;
+    const fetchCount = async () => {
+      try {
+        const res = await fetch(`${base}/api/v1/presence/online`);
+        const data = await res.json();
+        if (alive) setOnlineCount(data.online);
+      } catch {
+        /* keep last known value */
+      }
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 5000);
+    return () => {
+      alive = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const handleModeToggle = (mode: "tech" | "nontech") => {
@@ -47,7 +56,7 @@ export function Header() {
       {/* Status Indicator */}
       <div className="nav-status">
         <div className="blinking-dot"></div>
-        <span id="online-count">{onlineCount.toLocaleString()} ONLINE</span>
+        <span id="online-count">{(onlineCount ?? 0).toLocaleString()} ONLINE</span>
       </div>
     </header>
   );
