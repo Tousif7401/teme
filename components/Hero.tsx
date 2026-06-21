@@ -66,6 +66,7 @@ export function Hero() {
           <div className="auth-buttons">
             <button
               className="btn github"
+              onClick={() => (window.location.href = "/login")}
               onMouseEnter={() => handleButtonHover(true)}
               onMouseLeave={() => handleButtonHover(false)}
             >
@@ -83,6 +84,7 @@ export function Hero() {
             </button>
             <button
               className="btn google"
+              onClick={() => (window.location.href = "/api/auth/google")}
               onMouseEnter={() => handleButtonHover(true)}
               onMouseLeave={() => handleButtonHover(false)}
             >
