@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
+const APP_URL = (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
 export async function GET() {
   const clientId = process.env.GOOGLE_CLIENT_ID;

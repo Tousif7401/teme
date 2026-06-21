@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-const APP_URL = process.env.APP_URL ?? "https://localhost:3000";
+const APP_URL = (process.env.APP_URL ?? "https://localhost:3000").replace(/\/$/, "");
 
 export async function GET() {
   const clientId = process.env.GITHUB_CLIENT_ID;
