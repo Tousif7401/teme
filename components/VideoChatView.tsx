@@ -147,27 +147,26 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
     return (
       <div ref={ref} className={cn("h-screen flex flex-col", className)} style={{ background: "var(--bg)", color: "var(--ink)" }}>
         {/* Top Bar */}
-        <div className="px-2 sm:px-4 py-6 sm:py-7 flex justify-between items-center" style={{ background: "var(--ink)", color: "var(--bg)", borderBottom: "var(--border)" }}>
-          <div className="flex items-center gap-0" style={{ marginLeft: "5px" }}>
-            <div className="blinking-dot" style={{ width: "10px", height: "10px", borderWidth: "2px" }} />
-            <span className="hidden sm:inline" style={{ fontFamily: "sans-serif", fontSize: "24px", fontWeight: "800", letterSpacing: "-0.05em" }}>TEME</span>
-            <span className="sm:hidden" style={{ fontFamily: "sans-serif", fontSize: "20px", fontWeight: "800", letterSpacing: "-0.05em" }}>TEME</span>
+        <div className="px-3 sm:px-4 py-2.5 sm:py-3 flex justify-between items-center" style={{ background: "var(--ink)", color: "var(--bg)", borderBottom: "var(--border)" }}>
+          <div className="flex items-center gap-1.5">
+            <div className="blinking-dot" style={{ width: "9px", height: "9px", borderWidth: "2px" }} />
+            <span className="text-base sm:text-xl" style={{ fontFamily: "sans-serif", fontWeight: 800, letterSpacing: "-0.05em" }}>TEME</span>
           </div>
-          <div className="flex items-center gap-0.5 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-4">
             <div className="hidden sm:block" style={{ fontFamily: "monospace", fontSize: "12px", color: "#888" }}>
               SESSION: <span style={{ color: "var(--accent-blue)" }}>{sessionId || "—"}</span>
             </div>
             {!active ? (
-              <button onClick={onStart} className="btn topbar-btn max-sm:flex-[0_0_46px] max-sm:-mt-0.5" style={{ background: "var(--accent-green)", color: "var(--ink)", padding: "1px 3px sm:px-3 sm:py-1", fontSize: "6px", fontFamily: "monospace", fontWeight: "bold", marginRight: "5px" }}>
-                <span className="text-[6px] sm:text-xs">[ START ]</span>
+              <button onClick={onStart} className="btn text-[11px] sm:text-xs px-2.5 py-1 sm:px-3" style={{ background: "var(--accent-green)", color: "var(--ink)", fontFamily: "monospace", fontWeight: "bold" }}>
+                START
               </button>
             ) : (
-              <button onClick={onStop} className="btn topbar-btn max-sm:flex-[0_0_42px]" style={{ background: "var(--accent-red)", color: "var(--ink)", padding: "1px 3px sm:px-3 sm:py-1", fontSize: "6px", fontFamily: "monospace", fontWeight: "bold" }}>
-                <span className="text-[6px] sm:text-xs">[ STOP ]</span>
+              <button onClick={onStop} className="btn text-[11px] sm:text-xs px-2.5 py-1 sm:px-3" style={{ background: "var(--accent-red)", color: "var(--ink)", fontFamily: "monospace", fontWeight: "bold" }}>
+                STOP
               </button>
             )}
-            <button onClick={onReport} disabled={!connected} className="btn topbar-btn max-sm:flex-[0_0_65px]" style={{ background: "var(--accent-red)", color: "var(--ink)", padding: "1px 3px sm:px-3 sm:py-1", fontSize: "6px", fontFamily: "monospace", fontWeight: "bold", opacity: connected ? 1 : 0.4, marginRight: "10px" }}>
-              <span className="text-[6px] sm:text-xs">[ REPORT ]</span>
+            <button onClick={onReport} disabled={!connected} className="btn text-[11px] sm:text-xs px-2.5 py-1 sm:px-3" style={{ background: "var(--accent-red)", color: "var(--ink)", fontFamily: "monospace", fontWeight: "bold", opacity: connected ? 1 : 0.4 }}>
+              REPORT
             </button>
           </div>
         </div>

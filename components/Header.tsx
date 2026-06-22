@@ -6,8 +6,9 @@ import { useAppStore } from "@/store/useAppStore";
 export function Header() {
   const { landingMode, setLandingMode } = useAppStore();
   const [onlineCount, setOnlineCount] = useState<number | null>(null);
+  const [connections, setConnections] = useState<number | null>(null);
 
-  // Real online count from the backend, polled every 5s.
+  // Real online + total-connections counts from the backend, polled every 5s.
   useEffect(() => {
     const base = (process.env.NEXT_PUBLIC_API_BASE || "https://13.206.6.189.nip.io").replace(/\/$/, "");
     let alive = true;
@@ -15,7 +16,10 @@ export function Header() {
       try {
         const res = await fetch(`${base}/api/v1/presence/online`);
         const data = await res.json();
-        if (alive) setOnlineCount(data.online);
+        if (alive) {
+          setOnlineCount(data.online);
+          setConnections(data.connections);
+        }
       } catch {
         /* keep last known value */
       }
@@ -56,7 +60,9 @@ export function Header() {
       {/* Status Indicator */}
       <div className="nav-status">
         <div className="blinking-dot"></div>
-        <span id="online-count">{(onlineCount ?? 0).toLocaleString()} ONLINE</span>
+        <span id="online-count">
+          {(connections ?? 0).toLocaleString()} MEETS · {(onlineCount ?? 0).toLocaleString()} ONLINE
+        </span>
       </div>
     </header>
   );
