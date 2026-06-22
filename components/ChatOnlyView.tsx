@@ -303,20 +303,21 @@ const ChatOnlyView = React.forwardRef<HTMLDivElement, ChatOnlyViewProps>(
         {/* Profile Dialog */}
         {showProfileDialog && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 max-sm:p-0 max-sm:items-end"
             style={{ background: "rgba(0, 0, 0, 0.5)" }}
             onClick={() => setShowProfileDialog(false)}
           >
             <div
-              className="w-full max-w-md"
-              style={{ background: "var(--bg)", border: "2px solid var(--ink)" }}
+              className="w-full max-w-md max-sm:max-w-full max-sm:h-[85vh] max-sm:rounded-t-lg max-sm:rounded-b-none max-sm:mb-0"
+              style={{ background: "var(--bg)", border: "2px solid var(--ink)", padding: "32px", borderRadius: "8px" }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Dialog Header */}
-              <div className="px-4 py-3 flex justify-between items-center" style={{ borderBottom: "2px solid var(--ink)" }}>
-                <span style={{ fontFamily: "monospace", fontSize: "14px", fontWeight: "700" }}>PROFILE</span>
+              <div className="flex justify-between items-center max-sm:px-0 max-sm:py-2" style={{ borderBottom: "2px solid var(--ink)", marginLeft: "-32px", marginRight: "-32px", marginTop: "-32px", marginBottom: "24px", paddingLeft: "32px", paddingRight: "32px", paddingTop: "24px", paddingBottom: "16px" }}>
+                <span className="max-sm:text-xs" style={{ fontFamily: "monospace", fontSize: "14px", fontWeight: "700", position: "relative", top: "1px" }}>PROFILE</span>
                 <button
                   onClick={() => setShowProfileDialog(false)}
+                  className="max-sm:text-base"
                   style={{ background: "transparent", color: "var(--ink)", border: "none", fontSize: "20px", cursor: "pointer" }}
                 >
                   ×
@@ -324,28 +325,29 @@ const ChatOnlyView = React.forwardRef<HTMLDivElement, ChatOnlyViewProps>(
               </div>
 
               {/* Dialog Content */}
-              <div className="p-4">
+              <div style={{ marginTop: "16px" }} className="max-sm:mt-3">
                 {/* User Info */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(10,10,10,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(10,10,10,0.6)" }}>
-                    <svg style={{ width: "32px", height: "32px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="flex items-center gap-4 max-sm:gap-3" style={{ marginBottom: "13px" }}>
+                  <div className="max-sm:w-12 max-sm:h-12" style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(10,10,10,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(10,10,10,0.6)" }}>
+                    <svg className="max-sm:w-8 max-sm:h-8" style={{ width: "32px", height: "32px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  <div>
-                    <div style={{ fontFamily: "monospace", fontSize: "18px", fontWeight: "700" }}>you_dev</div>
-                    <div style={{ fontFamily: "monospace", fontSize: "12px", color: "#888" }}>// local host</div>
+                  <div className="max-sm:min-w-0 max-sm:flex-1">
+                    <div className="max-sm:text-base max-sm:truncate" style={{ fontFamily: "monospace", fontSize: "18px", fontWeight: "700" }}>you_dev</div>
+                    <div className="max-sm:text-[10px] max-sm:truncate" style={{ fontFamily: "monospace", fontSize: "12px", color: "#888" }}>// local host</div>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 mb-4">
+                <div className="flex gap-3 max-sm:gap-2 max-sm:flex-col">
                   <button
+                    className="max-sm:text-xs max-sm:py-2"
                     style={{
                       flex: 1,
                       background: "var(--accent-blue)",
                       color: "var(--bg)",
-                      padding: "8px 12px",
+                      padding: "10px 16px",
                       fontFamily: "monospace",
                       fontSize: "12px",
                       fontWeight: "600",
@@ -356,11 +358,12 @@ const ChatOnlyView = React.forwardRef<HTMLDivElement, ChatOnlyViewProps>(
                     [ VIEW PROFILE ]
                   </button>
                   <button
+                    className="max-sm:text-xs max-sm:py-2"
                     style={{
                       flex: 1,
                       background: "transparent",
                       color: "var(--ink)",
-                      padding: "8px 12px",
+                      padding: "10px 16px",
                       fontFamily: "monospace",
                       fontSize: "12px",
                       fontWeight: "600",
@@ -373,19 +376,17 @@ const ChatOnlyView = React.forwardRef<HTMLDivElement, ChatOnlyViewProps>(
                 </div>
 
                 {/* Divider */}
-                <div style={{ height: "2px", background: "var(--ink)", margin: "16px 0" }} />
+                <div className="max-sm:my-4" style={{ height: "2px", background: "var(--ink)", margin: "24px 0" }} />
 
                 {/* Stacks Section */}
                 <div>
-                  <span style={{ fontFamily: "monospace", fontSize: "11px", color: "#888", textTransform: "uppercase" }}>Your Stack</span>
-                  <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  <span className="max-sm:text-[10px]" style={{ fontFamily: "monospace", fontSize: "11px", color: "#888", textTransform: "uppercase" }}>Your Stack</span>
+                  <div className="max-sm:gap-2 max-sm:mt-2" style={{ marginTop: "16px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
                     {userStacks.map((stack) => (
                       <div
                         key={stack}
+                        className="max-sm:text-[10px] max-sm:px-2 max-sm:py-1"
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
                           fontFamily: "monospace",
                           fontSize: "12px",
                           padding: "4px 8px",
@@ -393,49 +394,9 @@ const ChatOnlyView = React.forwardRef<HTMLDivElement, ChatOnlyViewProps>(
                           border: "1px solid var(--ink)",
                         }}
                       >
-                        <span>{stack}</span>
-                        <button
-                          onClick={() => handleRemoveStack(stack)}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--ink)", fontSize: "14px", lineHeight: 1 }}
-                        >
-                          ×
-                        </button>
+                        {stack}
                       </div>
                     ))}
-                  </div>
-
-                  {/* Add Stack Input */}
-                  <div className="flex gap-2 mt-3">
-                    <input
-                      type="text"
-                      value={newStackInput}
-                      onChange={(e) => setNewStackInput(e.target.value)}
-                      onKeyPress={handleStackKeyPress}
-                      placeholder="Add stack..."
-                      style={{
-                        flex: 1,
-                        background: "var(--bg)",
-                        border: "2px solid var(--ink)",
-                        padding: "6px 10px",
-                        fontFamily: "monospace",
-                        fontSize: "12px",
-                      }}
-                    />
-                    <button
-                      onClick={handleAddStack}
-                      style={{
-                        background: "var(--ink)",
-                        color: "var(--bg)",
-                        padding: "6px 12px",
-                        fontFamily: "monospace",
-                        fontSize: "11px",
-                        fontWeight: "600",
-                        border: "2px solid var(--ink)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      [ + ]
-                    </button>
                   </div>
                 </div>
               </div>
