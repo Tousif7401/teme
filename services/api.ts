@@ -46,7 +46,38 @@ export const tokens = {
   },
 };
 
-async function req<T>(path: string, opts: { method?: string; body?: unknown; auth?: boolean } = {}): Promise<T> {
+// Single-flight token refresh: collapse concurrent refreshes into one call so a rotating
+// refresh token is never used twice (which would 401).
+let refreshing: Promise<boolean> | null = null;
+async function tryRefresh(): Promise<boolean> {
+  const refreshToken = tokens.refresh;
+  if (!refreshToken) return false;
+  if (!refreshing) {
+    refreshing = (async () => {
+      try {
+        const res = await fetch(`${V1}/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        });
+        if (!res.ok) return false;
+        const data = (await res.json()) as { accessToken: string; refreshToken: string };
+        tokens.saveRefreshed(data.accessToken, data.refreshToken);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        refreshing = null;
+      }
+    })();
+  }
+  return refreshing;
+}
+
+async function req<T>(
+  path: string,
+  opts: { method?: string; body?: unknown; auth?: boolean; _retried?: boolean } = {},
+): Promise<T> {
   const { method = "GET", body, auth = true } = opts;
   const headers: Record<string, string> = {};
   if (body !== undefined) headers["Content-Type"] = "application/json";
@@ -56,6 +87,12 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; aut
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
+
+  // Access token expired/invalid → refresh once and retry transparently.
+  if (res.status === 401 && auth && !opts._retried) {
+    if (await tryRefresh()) return req<T>(path, { ...opts, _retried: true });
+  }
+
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
   if (!res.ok) throw new Error(data?.message || `Request failed (${res.status})`);

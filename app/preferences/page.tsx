@@ -10,7 +10,12 @@ const REGIONS = [
 ];
 const ROLES = ["frontend", "backend", "fullstack", "devops", "ml", "mobile", "design", "student", "other"];
 
-function TagField({ label, value, onChange, placeholder }: { label: string; value: string[]; onChange: (v: string[]) => void; placeholder: string }) {
+// Dev-focused quick-pick suggestions.
+const STACK_SUGGESTIONS = ["typescript", "javascript", "python", "react", "next.js", "node", "go", "rust", "java", "c++", "postgres", "mongodb", "docker", "kubernetes", "aws", "graphql"];
+const INTEREST_SUGGESTIONS = ["pair-programming", "code-review", "system-design", "open-source", "hackathons", "startups", "mentoring", "debugging", "ai/ml", "web3", "freelance", "casual"];
+const LANG_SUGGESTIONS = ["en", "hi", "es", "fr", "de", "pt", "zh", "ja", "ar"];
+
+function TagField({ label, value, onChange, placeholder, suggestions = [] }: { label: string; value: string[]; onChange: (v: string[]) => void; placeholder: string; suggestions?: string[] }) {
   const [draft, setDraft] = useState("");
   const add = (raw: string) => {
     const t = raw.trim().toLowerCase();
@@ -21,6 +26,7 @@ function TagField({ label, value, onChange, placeholder }: { label: string; valu
     if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(draft); }
     else if (e.key === "Backspace" && !draft && value.length) onChange(value.slice(0, -1));
   };
+  const open = suggestions.filter((s) => !value.includes(s)).slice(0, 10);
   return (
     <label style={{ display: "block" }}>
       <span style={{ fontFamily: "monospace", fontSize: "12px", fontWeight: 700, textTransform: "uppercase" }}>{label}</span>
@@ -34,6 +40,16 @@ function TagField({ label, value, onChange, placeholder }: { label: string; valu
         <input value={draft} placeholder={value.length ? "" : placeholder} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey} onBlur={() => add(draft)}
           style={{ flex: 1, minWidth: "8ch", background: "transparent", outline: "none", fontFamily: "monospace", fontSize: 14 }} />
       </div>
+      {open.length > 0 && value.length < 20 && (
+        <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 5 }}>
+          {open.map((s) => (
+            <button key={s} type="button" onClick={() => add(s)}
+              style={{ border: "1px solid rgba(10,10,10,0.25)", background: "transparent", color: "#555", padding: "2px 8px", fontFamily: "monospace", fontSize: 11, cursor: "pointer" }}>
+              + {s}
+            </button>
+          ))}
+        </div>
+      )}
     </label>
   );
 }
@@ -103,9 +119,9 @@ export default function PreferencesPage() {
             </label>
           </div>
 
-          <TagField label="Tech stack" value={p.techStack} onChange={(v) => setP({ ...p, techStack: v })} placeholder="typescript, react, postgres…" />
-          <TagField label="Interested in" value={p.interestedIn} onChange={(v) => setP({ ...p, interestedIn: v })} placeholder="pair-programming, networking…" />
-          <TagField label="Languages" value={p.languages} onChange={(v) => setP({ ...p, languages: v })} placeholder="en, hi…" />
+          <TagField label="Tech stack" value={p.techStack} onChange={(v) => setP({ ...p, techStack: v })} placeholder="typescript, react, postgres…" suggestions={STACK_SUGGESTIONS} />
+          <TagField label="Interested in" value={p.interestedIn} onChange={(v) => setP({ ...p, interestedIn: v })} placeholder="pair-programming, system-design…" suggestions={INTEREST_SUGGESTIONS} />
+          <TagField label="Languages" value={p.languages} onChange={(v) => setP({ ...p, languages: v })} placeholder="en, hi…" suggestions={LANG_SUGGESTIONS} />
 
           {error && <p style={{ color: "var(--accent-red)", fontSize: 13, fontFamily: "monospace" }}>{error}</p>}
 
