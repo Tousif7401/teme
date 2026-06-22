@@ -1051,6 +1051,11 @@ footer {
   transform: translate(2px, 2px);
 }
 
+/* Topbar buttons - no hover transform */
+.topbar-btn:hover {
+  transform: none !important;
+}
+
 .cam-btn {
   cursor: pointer;
   transition: all 0.1s ease;

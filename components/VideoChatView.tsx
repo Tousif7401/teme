@@ -153,31 +153,31 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
             <span className="hidden sm:inline" style={{ fontFamily: "sans-serif", fontSize: "24px", fontWeight: "800", letterSpacing: "-0.05em" }}>TEME</span>
             <span className="sm:hidden" style={{ fontFamily: "sans-serif", fontSize: "20px", fontWeight: "800", letterSpacing: "-0.05em" }}>TEME</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div style={{ fontFamily: "monospace", fontSize: "12px", color: "#888" }}>
+          <div className="flex items-center gap-0.5 sm:gap-4">
+            <div className="hidden sm:block" style={{ fontFamily: "monospace", fontSize: "12px", color: "#888" }}>
               SESSION: <span style={{ color: "var(--accent-blue)" }}>{sessionId || "—"}</span>
             </div>
             {!active ? (
-              <button onClick={onStart} className="btn" style={{ background: "var(--accent-green)", color: "var(--ink)", padding: "4px 12px", fontSize: "12px", fontFamily: "monospace", fontWeight: "bold" }}>
-                [ START ]
+              <button onClick={onStart} className="btn topbar-btn max-sm:flex-[0_0_46px] max-sm:-mt-0.5" style={{ background: "var(--accent-green)", color: "var(--ink)", padding: "1px 3px sm:px-3 sm:py-1", fontSize: "6px", fontFamily: "monospace", fontWeight: "bold", marginRight: "5px" }}>
+                <span className="text-[6px] sm:text-xs">[ START ]</span>
               </button>
             ) : (
-              <button onClick={onStop} className="btn" style={{ background: "var(--accent-red)", color: "var(--ink)", padding: "4px 12px", fontSize: "12px", fontFamily: "monospace", fontWeight: "bold" }}>
-                [ STOP ]
+              <button onClick={onStop} className="btn topbar-btn max-sm:flex-[0_0_42px]" style={{ background: "var(--accent-red)", color: "var(--ink)", padding: "1px 3px sm:px-3 sm:py-1", fontSize: "6px", fontFamily: "monospace", fontWeight: "bold" }}>
+                <span className="text-[6px] sm:text-xs">[ STOP ]</span>
               </button>
             )}
-            <button onClick={onReport} disabled={!connected} className="btn" style={{ background: "var(--accent-red)", color: "var(--ink)", padding: "4px 12px", fontSize: "12px", fontFamily: "monospace", fontWeight: "bold", opacity: connected ? 1 : 0.4 }}>
-              [ REPORT ]
+            <button onClick={onReport} disabled={!connected} className="btn topbar-btn max-sm:flex-[0_0_65px]" style={{ background: "var(--accent-red)", color: "var(--ink)", padding: "1px 3px sm:px-3 sm:py-1", fontSize: "6px", fontFamily: "monospace", fontWeight: "bold", opacity: connected ? 1 : 0.4, marginRight: "10px" }}>
+              <span className="text-[6px] sm:text-xs">[ REPORT ]</span>
             </button>
           </div>
         </div>
 
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Left: Video Feeds Side by Side */}
-          <div className="flex-1 flex min-w-0" style={{ borderRight: "var(--border)" }}>
+          {/* Left: Video Feeds - stacked on mobile, side-by-side on desktop */}
+          <div className="flex-1 flex flex-col sm:flex-row min-w-0" style={{ borderRight: "var(--border)" }}>
             {/* Remote Peer Feed */}
-            <div className="flex-1 relative flex items-center justify-center" style={{ overflow: "hidden", borderRight: "var(--border)", background: "repeating-linear-gradient(-45deg, #e5e5e5, #e5e5e5 10px, #f0f0ee 10px, #f0f0ee 20px)" }}>
+            <div className="flex-1 relative flex items-center justify-center border-b sm:border-b-0 sm:border-r" style={{ overflow: "hidden", borderColor: "var(--border)", background: "repeating-linear-gradient(-45deg, #e5e5e5, #e5e5e5 10px, #f0f0ee 10px, #f0f0ee 20px)" }}>
               <div style={LABEL_STYLE}>REMOTE_PEER_CAM</div>
               {remoteStream ? (
                 <>
@@ -299,6 +299,23 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
             </div>
           </div>
         </div>
+
+        {/* Mobile Bottom Chat Bar - Full width, black background */}
+        <button
+          onClick={() => setShowChat(true)}
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40"
+          style={{
+            background: "#000",
+            color: "#fff",
+            padding: "12px 16px",
+            fontSize: "12px",
+            fontFamily: "monospace",
+            fontWeight: "bold",
+            borderTop: "2px solid var(--border)"
+          }}
+        >
+          [ CHAT ]
+        </button>
 
         {/* Profile Dialog */}
         {showProfileDialog && (
