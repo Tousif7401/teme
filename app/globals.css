@@ -1102,9 +1102,16 @@ footer {
 
 @media (max-width: 768px) {
   header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 16px;
+  }
+  /* Push the online/meets status to the right (wraps below if tight). */
+  header .nav-status {
+    margin-left: auto;
   }
 
   .hero-left h1 {
