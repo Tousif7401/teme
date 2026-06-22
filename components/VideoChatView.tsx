@@ -172,9 +172,9 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="lg:flex-1 lg:overflow-hidden flex-1 flex flex-col lg:flex-row">
           {/* Left: Video Feeds - stacked on mobile, side-by-side on desktop */}
-          <div className="flex-1 flex flex-col sm:flex-row min-w-0" style={{ borderRight: "var(--border)" }}>
+          <div className="flex-1 flex flex-col sm:flex-row min-w-0 lg:min-h-full" style={{ borderRight: "var(--border)", height: "calc(100vh - 120px - 48px)" }}>
             {/* Remote Peer Feed */}
             <div className="flex-1 relative flex items-center justify-center border-b sm:border-b-0 sm:border-r" style={{ overflow: "hidden", borderColor: "var(--border)", background: "repeating-linear-gradient(-45deg, #e5e5e5, #e5e5e5 10px, #f0f0ee 10px, #f0f0ee 20px)" }}>
               <div style={LABEL_STYLE}>REMOTE_PEER_CAM</div>
@@ -196,7 +196,19 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
             <div className="flex-1 relative flex items-center justify-center" style={{ overflow: "hidden", background: "var(--bg)" }}>
               <div style={LABEL_STYLE}>LOCAL_HOST_CAM</div>
               {localStream && !cameraOff ? (
-                <VideoFeed stream={localStream} muted mirror />
+                <>
+                  <VideoFeed stream={localStream} muted mirror />
+                  {/* Mic Off Indicator */}
+                  {micMuted && (
+                    <div style={{ position: "absolute", top: "12px", right: "12px", zIndex: 10, background: "rgba(255,51,102,0.9)", color: "var(--bg)", padding: "4px 8px", borderRadius: "4px", display: "flex", alignItems: "center", gap: "4px", fontFamily: "monospace", fontSize: "10px", fontWeight: "bold", border: "var(--border)" }}>
+                      <svg style={{ width: "14px", height: "14px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a11 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                      </svg>
+                      MIC OFF
+                    </div>
+                  )}
+                </>
               ) : status === "starting" ? (
                 <LoadingOverlay label="INITIALIZING CAMERA…" />
               ) : cameraOff ? (
@@ -302,7 +314,7 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
         {/* Mobile Bottom Chat Bar - Full width, black background */}
         <button
           onClick={() => setShowChat(true)}
-          className="lg:hidden fixed bottom-0 left-0 right-0 z-40"
+          className="lg:hidden w-full"
           style={{
             background: "#000",
             color: "#fff",
