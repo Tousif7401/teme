@@ -33,18 +33,13 @@ export default function VideoChatPage() {
   const prevStatus = useRef(vc.status);
 
   // Logged-in users only, and only once preferences are set.
-  // TEMPORARILY DISABLED FOR TESTING
-  // useEffect(() => {
-  //   if (!backend.isLoggedIn()) {
-  //     router.replace("/login");
-  //     return;
-  //   }
-  //   backend.hasProfile().then((has) => (has ? setAuthed(true) : router.replace("/preferences")));
-  // }, [router]);
-  // Auto-set authed to true for testing
   useEffect(() => {
-    setAuthed(true);
-  }, []);
+    if (!backend.isLoggedIn()) {
+      router.replace("/login");
+      return;
+    }
+    backend.hasProfile().then((has) => (has ? setAuthed(true) : router.replace("/preferences")));
+  }, [router]);
 
   // +credits the moment a call connects.
   useEffect(() => {
@@ -140,6 +135,7 @@ export default function VideoChatPage() {
         onToggleMic={vc.toggleMic}
         onToggleCamera={vc.toggleCamera}
         onSend={vc.sendMessage}
+        onUpdateMessage={vc.updateMessage}
         onReport={onReport}
       />
 

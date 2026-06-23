@@ -202,4 +202,7 @@ export const backend = {
   turnCredentials: () => req<{ iceServers: RTCIceServer[]; ttl: number }>("/turn/credentials"),
   report: (reportedId: string, reason: string) =>
     req("/reports", { method: "POST", body: { reportedId, reason } }),
+  /** Report a specific message for moderation. */
+  reportMessage: (messageId: string, reason: string) =>
+    req("/reports/message", { method: "POST", body: { messageId, reason } }),
 };

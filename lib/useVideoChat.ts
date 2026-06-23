@@ -10,6 +10,10 @@ export interface VCMessage {
   id: number;
   type: "system" | "peer" | "you";
   text: string;
+  isReported?: boolean;
+  isEdited?: boolean;
+  replyTo?: number;
+  replyText?: string;
 }
 
 let mid = 1;
@@ -82,7 +86,7 @@ export function useVideoChat() {
         socket.emit("match:find");
       });
       socket.on("chat:message", (e: ChatIn) => {
-        setMessages((m) => [...m, { id: mid++, type: "peer", text: e.text }]);
+        setMessages((m) => [...m, { id: mid++, type: "peer", text: e.text } as VCMessage]);
       });
       socket.on("chat:blocked", () => sys("A message was blocked by moderation."));
       socket.on("error", (e: { message?: string }) => {
@@ -146,11 +150,30 @@ export function useVideoChat() {
     setStatus("idle");
   }, [status, teardownCall]);
 
-  const sendMessage = useCallback((text: string) => {
+  const sendMessage = useCallback((text: string, replyContext?: { replyTo: number; replyText: string }) => {
     const t = text.trim();
     if (!t || !socketRef.current) return;
     socketRef.current.emit("chat:message", { text: t });
-    setMessages((m) => [...m, { id: mid++, type: "you", text: t }]);
+    setMessages((m) => [...m, {
+      id: mid++,
+      type: "you",
+      text: t,
+      ...(replyContext && { replyTo: replyContext.replyTo, replyText: replyContext.replyText })
+    }]);
+  }, []);
+
+  const updateMessage = useCallback((messageId: number, newText: string) => {
+    const t = newText.trim();
+    if (!t) return;
+    // TODO: Send edit to socket when backend supports it
+    // if (socketRef.current) {
+    //   socketRef.current.emit("chat:edit", { messageId, text: t });
+    // }
+    setMessages((m) => m.map(msg =>
+      msg.id === messageId
+        ? { ...msg, text: t, isEdited: msg.text !== t ? true : msg.isEdited }
+        : msg
+    ));
   }, []);
 
   const toggleMic = useCallback(() => {
@@ -177,6 +200,6 @@ export function useVideoChat() {
 
   return {
     status, localStream, remoteStream, messages, sessionId, partnerName, micMuted, cameraOff,
-    start, stop, skip, sendMessage, toggleMic, toggleCamera,
+    start, stop, skip, sendMessage, updateMessage, toggleMic, toggleCamera,
   };
 }

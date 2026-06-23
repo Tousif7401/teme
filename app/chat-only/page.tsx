@@ -9,6 +9,7 @@ export default function ChatOnlyPage() {
   const router = useRouter();
   const [authed, setAuthed] = useState(false);
 
+  // Auth check - user must be logged in and have a profile
   useEffect(() => {
     if (!backend.isLoggedIn()) {
       router.replace("/login");
