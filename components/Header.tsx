@@ -61,7 +61,6 @@ export function Header() {
       <div className="nav-status">
         <div className="blinking-dot"></div>
         <span id="online-count">
-          {connections && connections > 0 ? `${connections.toLocaleString()} MEETS · ` : ""}
           {(onlineCount ?? 0).toLocaleString()} ONLINE
         </span>
       </div>
