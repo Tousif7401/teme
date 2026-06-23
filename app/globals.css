@@ -1135,6 +1135,19 @@ footer {
   }
 }
 
+/* Desktop screens 1024px and above - fix button text wrapping */
+@media (min-width: 1024px) {
+  .cam-btn-sm {
+    padding: 4px 12px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .cam-controls-horizontal {
+    gap: 8px;
+  }
+}
+
 /* Tablets Portrait (768px - 1023px) */
 @media (max-width: 1023px) {
   .hero {
@@ -1972,5 +1985,16 @@ footer {
   .blinking-dot {
     width: 4px;
     height: 4px;
+  }
+
+  .cam-btn-sm {
+    padding: 3px 8px;
+    font-size: 7px;
+    white-space: nowrap;
+  }
+
+  .cam-controls-horizontal {
+    gap: 4px;
+    bottom: 6px;
   }
 }
