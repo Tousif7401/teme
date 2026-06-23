@@ -2,12 +2,18 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { ProfileDialog, SimpleProfileDialog, MessageActionMenu, MessageReportModal } from "@/components";
+import { backend } from "@/services/api";
 
 export type VideoChatStatus = "idle" | "starting" | "searching" | "connecting" | "connected";
 export interface VideoChatMessage {
   id: number;
   type: "system" | "peer" | "you";
   text: string;
+  isReported?: boolean;
+  isEdited?: boolean;
+  replyTo?: number;
+  replyText?: string;
 }
 
 export interface VideoChatViewProps {
@@ -25,7 +31,8 @@ export interface VideoChatViewProps {
   onSkip: () => void;
   onToggleMic: () => void;
   onToggleCamera: () => void;
-  onSend: (text: string) => void;
+  onSend: (text: string, replyContext?: { replyTo: number; replyText: string }) => void;
+  onUpdateMessage?: (messageId: number, newText: string) => void;
   onReport: () => void;
 }
 
@@ -95,14 +102,44 @@ const LABEL_STYLE: React.CSSProperties = {
 
 const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
   (
-    { className, status, sessionId, partnerName, localStream, remoteStream, messages, micMuted, cameraOff, onStart, onStop, onSkip, onToggleMic, onToggleCamera, onSend, onReport },
+    { className, status, sessionId, partnerName, localStream, remoteStream, messages, micMuted, cameraOff, onStart, onStop, onSkip, onToggleMic, onToggleCamera, onSend, onUpdateMessage, onReport },
     ref,
   ) => {
     const [message, setMessage] = useState("");
     const [showChat, setShowChat] = useState(false);
     const [showProfileDialog, setShowProfileDialog] = useState(false);
-    const [userStacks, setUserStacks] = useState(["React", "TypeScript", "Next.js", "Tailwind"]);
-    const [newStackInput, setNewStackInput] = useState("");
+    const [showFullProfileDialog, setShowFullProfileDialog] = useState(false);
+    const [fullProfileEditMode, setFullProfileEditMode] = useState(false);
+
+    // Message reporting state
+    const [showMessageReportModal, setShowMessageReportModal] = useState(false);
+    const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
+    const [selectedMessageText, setSelectedMessageText] = useState("");
+    const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+    const [showMessageReportConfirm, setShowMessageReportConfirm] = useState(false);
+    const [showCopyConfirm, setShowCopyConfirm] = useState(false);
+    const [reportedMessageIds, setReportedMessageIds] = useState<Set<number>>(new Set());
+
+    // Reply to message state
+    const [replyingTo, setReplyingTo] = useState<{ id: number; text: string; sender: string } | null>(null);
+    // Action menu state
+    const [actionMenuOpen, setActionMenuOpen] = useState<number | null>(null);
+    // Message editing state
+    const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+    const [editingMessageText, setEditingMessageText] = useState("");
+    const editInputRef = useRef<HTMLInputElement>(null);
+    const isEditingCancelledRef = useRef(false);
+    // Long press state
+    const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const [userProfile, setUserProfile] = useState({
+      displayName: "you_dev",
+      role: "fullstack",
+      region: "in",
+      techStack: ["React", "TypeScript", "Next.js", "Tailwind"],
+      interestedIn: ["pair-programming"],
+      languages: ["en"],
+    });
     const chatEndRef = useRef<HTMLDivElement>(null);
     const active = status !== "idle";
     const connected = status === "connected";
@@ -111,10 +148,25 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
+    // Cleanup long-press timer on unmount
+    useEffect(() => {
+      return () => {
+        if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+        }
+      };
+    }, []);
+
     const send = () => {
       if (message.trim()) {
-        onSend(message);
+        // If replying to a message, include the reply reference
+        const replyContext = replyingTo ? {
+          replyTo: replyingTo.id,
+          replyText: replyingTo.text
+        } : undefined;
+        onSend(message, replyContext);
         setMessage("");
+        setReplyingTo(null);
       }
     };
     const onKey = (e: React.KeyboardEvent) => {
@@ -124,25 +176,162 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
       }
     };
 
-    const handleAddStack = () => {
-      if (newStackInput.trim() && !userStacks.includes(newStackInput.trim())) {
-        setUserStacks([...userStacks, newStackInput.trim()]);
-        setNewStackInput("");
-      }
-    };
-
-    const handleRemoveStack = (stackToRemove: string) => {
-      setUserStacks(userStacks.filter(stack => stack !== stackToRemove));
-    };
-
-    const handleStackKeyPress = (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleAddStack();
-      }
-    };
-
     const remoteLabel = status === "searching" ? "SEARCHING FOR A PEER…" : status === "connecting" ? "CONNECTING…" : "WAITING…";
+
+    // Message reporting handlers
+    const handleReportMessage = (messageId: number) => {
+      const msg = messages.find(m => m.id === messageId);
+      if (msg) {
+        setSelectedMessageId(messageId);
+        setSelectedMessageText(msg.text);
+        setShowMessageReportModal(true);
+      }
+    };
+
+    const handleSubmitMessageReport = async (messageId: string | number, reason: string) => {
+      setIsSubmittingReport(true);
+
+      try {
+        // TODO: Send to backend when API is ready
+        // await backend.reportMessage(messageId.toString(), reason);
+        console.log("Message report submitted:", { messageId, reason });
+
+        // Mark message as reported in local state
+        setReportedMessageIds(prev => new Set(prev).add(Number(messageId)));
+
+        // Show confirmation
+        setShowMessageReportModal(false);
+        setShowMessageReportConfirm(true);
+
+        // Hide confirmation after 3 seconds
+        setTimeout(() => setShowMessageReportConfirm(false), 3000);
+      } catch (error) {
+        console.error("Failed to submit message report:", error);
+      } finally {
+        setIsSubmittingReport(false);
+      }
+    };
+
+    const handleCloseMessageReportModal = () => {
+      setShowMessageReportModal(false);
+      setSelectedMessageId(null);
+      setSelectedMessageText("");
+    };
+
+    // Reply handlers
+    const handleReplyToMessage = (messageId: number) => {
+      const msg = messages.find(m => m.id === messageId);
+      if (msg && msg.type !== "system") {
+        const sender = msg.type === "peer" ? partnerName : "you";
+        setReplyingTo({ id: msg.id, text: msg.text, sender });
+        // Focus on input
+        document.getElementById("chat-input")?.focus();
+      }
+    };
+
+    const handleCancelReply = () => {
+      setReplyingTo(null);
+    };
+
+    // Action menu handlers
+    const handleOpenActionMenu = (messageId: number) => {
+      // Close any open menu first
+      if (actionMenuOpen === messageId) {
+        setActionMenuOpen(null);
+      } else {
+        setActionMenuOpen(messageId);
+      }
+    };
+
+    const handleCloseActionMenu = () => {
+      setActionMenuOpen(null);
+    };
+
+    const handleMenuReply = (messageId: number) => {
+      handleReplyToMessage(messageId);
+    };
+
+    const handleMenuReport = (messageId: number) => {
+      handleReportMessage(messageId);
+    };
+
+    const handleCopyMessage = (text: string) => {
+      navigator.clipboard.writeText(text);
+      setShowCopyConfirm(true);
+      setTimeout(() => setShowCopyConfirm(false), 2000);
+    };
+
+    const handleEditMessage = (messageId: number) => {
+      const msg = messages.find(m => m.id === messageId);
+      if (msg && msg.type === "you") {
+        setEditingMessageId(messageId);
+        setEditingMessageText(msg.text);
+        // Close the action menu
+        setActionMenuOpen(null);
+        // Focus on edit input after render
+        setTimeout(() => editInputRef.current?.focus(), 0);
+      }
+    };
+
+    const handleSaveEdit = () => {
+      if (isEditingCancelledRef.current) {
+        isEditingCancelledRef.current = false;
+        setEditingMessageId(null);
+        setEditingMessageText("");
+        return;
+      }
+      if (editingMessageId && editingMessageText.trim()) {
+        // Call the parent's onUpdateMessage callback
+        if (onUpdateMessage) {
+          onUpdateMessage(editingMessageId, editingMessageText.trim());
+        }
+        setEditingMessageId(null);
+        setEditingMessageText("");
+      }
+    };
+
+    const handleCancelEdit = (e?: React.MouseEvent) => {
+      e?.preventDefault();
+      isEditingCancelledRef.current = true;
+      setEditingMessageId(null);
+      setEditingMessageText("");
+    };
+
+    const handleMenuEdit = (messageId: number) => {
+      handleEditMessage(messageId);
+    };
+
+    // Handle keyboard for edit input
+    const handleEditKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSaveEdit();
+      } else if (e.key === "Escape") {
+        handleCancelEdit();
+      }
+    };
+
+    // Long press handlers for mobile
+    const handleTouchStart = (messageId: number) => {
+      longPressTimerRef.current = setTimeout(() => {
+        handleOpenActionMenu(messageId);
+        longPressTimerRef.current = null;
+      }, 500);
+    };
+
+    const handleTouchEnd = () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    };
+
+    const handleTouchMove = () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    };
 
     return (
       <div ref={ref} className={cn("h-screen flex flex-col", className)} style={{ background: "var(--bg)", color: "var(--ink)" }}>
@@ -272,6 +461,10 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
               {messages.map((msg) => (
                 <div
                   key={msg.id}
+                  className="group"
+                  onTouchStart={() => msg.type !== "system" && handleTouchStart(msg.id)}
+                  onTouchEnd={handleTouchEnd}
+                  onTouchMove={handleTouchMove}
                   style={
                     msg.type === "system"
                       ? { color: "#888", fontFamily: "monospace", fontSize: "11px" }
@@ -281,10 +474,214 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
                   {msg.type === "system" ? (
                     <span>{msg.text}</span>
                   ) : (
-                    <span>
-                      <span style={{ fontFamily: "monospace" }}>{msg.type === "peer" ? `> ${partnerName}: ` : "> you: "}</span>
-                      {msg.text}
-                    </span>
+                    <div className="flex items-start gap-2 relative">
+                      {/* Message content or edit field */}
+                      <span className="flex-1">
+                        {editingMessageId === msg.id ? (
+                          // Edit mode
+                          <div className="flex items-center gap-2">
+                            <input
+                              ref={editInputRef}
+                              type="text"
+                              value={editingMessageText}
+                              onChange={(e) => setEditingMessageText(e.target.value)}
+                              onKeyDown={handleEditKeyDown}
+                              onBlur={handleSaveEdit}
+                              style={{
+                                flex: 1,
+                                background: "var(--bg)",
+                                border: "var(--border)",
+                                padding: "4px 8px",
+                                fontFamily: "monospace",
+                                fontSize: "14px",
+                              }}
+                              autoFocus
+                            />
+                            <button
+                              onClick={handleSaveEdit}
+                              style={{
+                                background: "var(--accent-green)",
+                                color: "var(--ink)",
+                                border: "var(--border)",
+                                padding: "4px 8px",
+                                fontSize: "11px",
+                                fontWeight: "bold",
+                                fontFamily: "monospace",
+                                cursor: "pointer",
+                              }}
+                            >
+                              ✓
+                            </button>
+                            <button
+                              type="button"
+                              onMouseDown={handleCancelEdit}
+                              onPointerDown={(e) => {
+                                e.preventDefault();
+                                handleCancelEdit();
+                              }}
+                              style={{
+                                background: "var(--accent-red)",
+                                color: "var(--ink)",
+                                border: "var(--border)",
+                                padding: "4px 8px",
+                                fontSize: "14px",
+                                fontWeight: "bold",
+                                fontFamily: "monospace",
+                                cursor: "pointer",
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          // View mode
+                          <>
+                            {/* Reply context */}
+                            {msg.replyTo && msg.replyText && (
+                              <div style={{
+                                marginBottom: "4px",
+                                padding: "6px 8px",
+                                background: "rgba(10,10,10,0.05)",
+                                borderLeft: "2px solid var(--ink)",
+                                fontSize: "12px",
+                                color: "#888",
+                                fontFamily: "monospace",
+                              }}>
+                                ↩ <span style={{ fontWeight: "600" }}>Replying to:</span> "{msg.replyText}"
+                              </div>
+                            )}
+                            <div>
+                              <span style={{ fontFamily: "monospace" }}>{msg.type === "peer" ? `> ${partnerName}: ` : "> you: "}</span>
+                              {msg.text}
+                            {/* Edited badge */}
+                            {msg.isEdited && (
+                              <span style={{
+                                marginLeft: "8px",
+                                padding: "2px 6px",
+                                background: "rgba(10,10,10,0.1)",
+                                color: "#888",
+                                fontFamily: "monospace",
+                                fontSize: "9px",
+                                fontStyle: "italic",
+                              }}>
+                                (edited)
+                              </span>
+                            )}
+                            {/* Reported badge */}
+                            {reportedMessageIds.has(msg.id) && (
+                              <span style={{
+                                marginLeft: "8px",
+                                padding: "2px 6px",
+                                background: "var(--accent-red)",
+                                color: "var(--ink)",
+                                fontFamily: "monospace",
+                                fontSize: "9px",
+                                fontWeight: "700",
+                                border: "1px solid var(--ink)",
+                              }}>
+                                REPORTED
+                              </span>
+                            )}
+                            </div>
+                          </>
+                        )}
+                      </span>
+
+                      {/* Action buttons - only show when not editing */}
+                      {editingMessageId !== msg.id && (
+                        <span className="flex items-center gap-1 opacity-0 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-150">
+                          {/* Reply icon */}
+                          <button
+                            onClick={() => handleReplyToMessage(msg.id)}
+                            className="p-1 hover:bg-warm-sand/50 rounded transition-colors"
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              color: "var(--accent-blue)",
+                            }}
+                            title="Reply"
+                            aria-label="Reply to this message"
+                          >
+                            <svg style={{ width: "16px", height: "16px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                            </svg>
+                          </button>
+
+                          {/* Report icon - only for peer messages */}
+                          {msg.type === "peer" && !reportedMessageIds.has(msg.id) && (
+                            <button
+                              onClick={() => handleReportMessage(msg.id)}
+                              className="p-1 hover:bg-warm-sand/50 rounded transition-colors"
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "var(--accent-red)",
+                              }}
+                              title="Report"
+                              aria-label="Report this message"
+                            >
+                              <svg style={{ width: "16px", height: "16px" }} fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z" />
+                              </svg>
+                            </button>
+                          )}
+
+                          {/* Edit icon - only for own messages */}
+                          {msg.type === "you" && (
+                            <button
+                              onClick={() => handleEditMessage(msg.id)}
+                              className="p-1 hover:bg-warm-sand/50 rounded transition-colors"
+                              style={{
+                                background: "transparent",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "var(--accent-blue)",
+                              }}
+                              title="Edit"
+                              aria-label="Edit this message"
+                            >
+                              <svg style={{ width: "16px", height: "16px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                          )}
+
+                          {/* Three-dot menu button */}
+                          <button
+                            onClick={() => handleOpenActionMenu(msg.id)}
+                            className="p-1 hover:bg-warm-sand/50 rounded transition-colors"
+                            style={{
+                              background: actionMenuOpen === msg.id ? "rgba(10,10,10,0.1)" : "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              color: "var(--ink)",
+                            }}
+                            aria-label="More options"
+                          >
+                            <svg style={{ width: "16px", height: "16px" }} fill="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="5" r="2" />
+                              <circle cx="12" cy="12" r="2" />
+                              <circle cx="12" cy="19" r="2" />
+                            </svg>
+                          </button>
+                        </span>
+                      )}
+
+                      {/* Action menu dropdown */}
+                      {actionMenuOpen === msg.id && editingMessageId !== msg.id && (
+                        <MessageActionMenu
+                          open={actionMenuOpen === msg.id}
+                          onClose={handleCloseActionMenu}
+                          onCopy={() => handleCopyMessage(msg.text)}
+                          onReply={() => handleMenuReply(msg.id)}
+                          onReport={() => handleMenuReport(msg.id)}
+                          onEdit={() => handleMenuEdit(msg.id)}
+                          isOwnMessage={msg.type === "you"}
+                        />
+                      )}
+                    </div>
                   )}
                 </div>
               ))}
@@ -293,17 +690,35 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
 
             {/* Chat Input */}
             <div className="p-2 sm:p-3" style={{ borderTop: "2px solid var(--ink)" }}>
+              {/* Reply context bar */}
+              {replyingTo && (
+                <div className="flex items-center gap-2 mb-2 p-2" style={{ background: "rgba(10,10,10,0.05)", border: "1px solid var(--ink)", fontSize: "11px" }}>
+                  <span style={{ fontFamily: "monospace", fontWeight: "600", color: "var(--accent-blue)" }}>
+                    ↩ Replying to {replyingTo.sender}:
+                  </span>
+                  <span style={{ fontFamily: "monospace", color: "#888", fontStyle: "italic", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    "{replyingTo.text.slice(0, 50)}{replyingTo.text.length > 50 ? "..." : ""}"
+                  </span>
+                  <button
+                    onClick={handleCancelReply}
+                    style={{ background: "transparent", border: "none", color: "var(--ink)", cursor: "pointer", padding: "2px 6px", fontSize: "14px", fontWeight: "bold" }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
               <div className="flex gap-0">
                 <input
+                  id="chat-input"
                   type="text"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={onKey}
                   disabled={!connected}
-                  placeholder={connected ? "Type a message..." : "Connect to chat…"}
+                  placeholder={replyingTo ? "Replying..." : (connected ? "Type a message..." : "Connect to chat…")}
                   style={{ flex: 1, background: "var(--bg)", border: "var(--border)", padding: "8px 12px", fontFamily: "monospace", fontSize: "14px", opacity: connected ? 1 : 0.5 }}
                 />
-                <button onClick={send} disabled={!connected} className="btn" style={{ background: "var(--accent-blue)", color: "var(--bg)", padding: "8px 21px", fontFamily: "monospace", fontSize: "14px", fontWeight: "bold", opacity: connected ? 1 : 0.5, width: "auto" }}>
+                <button onClick={send} disabled={!connected} className="btn" style={{ background: "var(--accent-blue)", color: "var(--bg)", padding: "8px 21px", fontFamily: "monospace", fontSize: "14px", fontWeight: "bold", width: "auto", opacity: connected ? 1 : 0.5 }}>
                   SEND
                 </button>
               </div>
@@ -328,107 +743,101 @@ const VideoChatView = React.forwardRef<HTMLDivElement, VideoChatViewProps>(
           [ CHAT ]
         </button>
 
-        {/* Profile Dialog */}
-        {showProfileDialog && (
+        {/* Simple Profile Dialog */}
+        <SimpleProfileDialog
+          open={showProfileDialog}
+          onClose={() => setShowProfileDialog(false)}
+          userProfile={userProfile}
+          buttons={[
+            {
+              label: "[ VIEW FULL PROFILE ]",
+              onClick: () => {
+                setShowProfileDialog(false);
+                setFullProfileEditMode(false);
+                setShowFullProfileDialog(true);
+              },
+              variant: "primary",
+            },
+            {
+              label: "[ EDIT PROFILE ]",
+              onClick: () => {
+                setShowProfileDialog(false);
+                setFullProfileEditMode(true);
+                setShowFullProfileDialog(true);
+              },
+              variant: "secondary",
+            },
+          ]}
+        />
+
+        {/* Full Profile Dialog */}
+        <ProfileDialog
+          open={showFullProfileDialog}
+          onClose={() => setShowFullProfileDialog(false)}
+          existingProfile={userProfile}
+          initialEditMode={fullProfileEditMode}
+          onSave={(updatedProfile) => {
+            setUserProfile(updatedProfile);
+            setShowFullProfileDialog(false);
+            setShowProfileDialog(true);
+          }}
+        />
+
+        {/* Message Report Modal */}
+        <MessageReportModal
+          open={showMessageReportModal}
+          messageId={selectedMessageId}
+          messageText={selectedMessageText}
+          onClose={handleCloseMessageReportModal}
+          onSubmit={handleSubmitMessageReport}
+          isSubmitting={isSubmittingReport}
+        />
+
+        {/* Message Report Confirmation Toast */}
+        {showMessageReportConfirm && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 max-sm:p-0 max-sm:items-end"
-            style={{ background: "rgba(0, 0, 0, 0.5)" }}
-            onClick={() => setShowProfileDialog(false)}
+            style={{
+              position: "fixed",
+              bottom: 80,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 200,
+              background: "var(--accent-green)",
+              color: "var(--ink)",
+              border: "var(--border)",
+              padding: "12px 24px",
+              fontFamily: "monospace",
+              fontWeight: "700",
+              fontSize: "13px",
+              animation: "slideUp 0.3s ease-out",
+            }}
           >
-            <div
-              className="w-full max-w-md max-sm:max-w-full max-sm:h-[85vh] max-sm:rounded-t-lg max-sm:rounded-b-none max-sm:mb-0"
-              style={{ background: "var(--bg)", border: "2px solid var(--ink)", padding: "32px", borderRadius: "8px" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Dialog Header */}
-              <div className="flex justify-between items-center max-sm:px-0 max-sm:py-2" style={{ borderBottom: "2px solid var(--ink)", marginLeft: "-32px", marginRight: "-32px", marginTop: "-32px", marginBottom: "24px", paddingLeft: "32px", paddingRight: "32px", paddingTop: "24px", paddingBottom: "16px" }}>
-                <span className="max-sm:text-xs" style={{ fontFamily: "monospace", fontSize: "14px", fontWeight: "700", position: "relative", top: "1px" }}>PROFILE</span>
-                <button
-                  onClick={() => setShowProfileDialog(false)}
-                  className="max-sm:text-base"
-                  style={{ background: "transparent", color: "var(--ink)", border: "none", fontSize: "20px", cursor: "pointer" }}
-                >
-                  ×
-                </button>
-              </div>
+            ✓ Message reported
+            <style>{`@keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }`}</style>
+          </div>
+        )}
 
-              {/* Dialog Content */}
-              <div style={{ marginTop: "16px" }} className="max-sm:mt-3">
-                {/* User Info */}
-                <div className="flex items-center gap-4 max-sm:gap-3" style={{ marginBottom: "13px" }}>
-                  <div className="max-sm:w-12 max-sm:h-12" style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(10,10,10,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(10,10,10,0.6)" }}>
-                    <svg className="max-sm:w-8 max-sm:h-8" style={{ width: "32px", height: "32px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                  <div className="max-sm:min-w-0 max-sm:flex-1">
-                    <div className="max-sm:text-base max-sm:truncate" style={{ fontFamily: "monospace", fontSize: "18px", fontWeight: "700" }}>you_dev</div>
-                    <div className="max-sm:text-[10px] max-sm:truncate" style={{ fontFamily: "monospace", fontSize: "12px", color: "#888" }}>// local host</div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 max-sm:gap-2 max-sm:flex-col">
-                  <button
-                    className="max-sm:text-xs max-sm:py-2"
-                    style={{
-                      flex: 1,
-                      background: "var(--accent-blue)",
-                      color: "var(--bg)",
-                      padding: "10px 16px",
-                      fontFamily: "monospace",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      border: "2px solid var(--ink)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    [ VIEW PROFILE ]
-                  </button>
-                  <button
-                    className="max-sm:text-xs max-sm:py-2"
-                    style={{
-                      flex: 1,
-                      background: "transparent",
-                      color: "var(--ink)",
-                      padding: "10px 16px",
-                      fontFamily: "monospace",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      border: "2px solid var(--ink)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    [ EDIT PROFILE ]
-                  </button>
-                </div>
-
-                {/* Divider */}
-                <div className="max-sm:my-4" style={{ height: "2px", background: "var(--ink)", margin: "24px 0" }} />
-
-                {/* Stacks Section */}
-                <div>
-                  <span className="max-sm:text-[10px]" style={{ fontFamily: "monospace", fontSize: "11px", color: "#888", textTransform: "uppercase" }}>Your Stack</span>
-                  <div className="max-sm:gap-2 max-sm:mt-2" style={{ marginTop: "16px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                    {userStacks.map((stack) => (
-                      <div
-                        key={stack}
-                        className="max-sm:text-[10px] max-sm:px-2 max-sm:py-1"
-                        style={{
-                          fontFamily: "monospace",
-                          fontSize: "12px",
-                          padding: "4px 8px",
-                          background: "rgba(10,10,10,0.1)",
-                          border: "1px solid var(--ink)",
-                        }}
-                      >
-                        {stack}
-                      </div>
-                    ))}
-                  </div>
-              </div>
-              </div>
-            </div>
+        {/* Copy Confirmation Toast */}
+        {showCopyConfirm && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: 80,
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 200,
+              background: "var(--accent-blue)",
+              color: "var(--bg)",
+              border: "var(--border)",
+              padding: "12px 24px",
+              fontFamily: "monospace",
+              fontWeight: "700",
+              fontSize: "13px",
+              animation: "slideUp 0.3s ease-out",
+            }}
+          >
+            ✓ Message copied
+            <style>{`@keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }`}</style>
           </div>
         )}
       </div>

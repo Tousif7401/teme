@@ -19,8 +19,12 @@ export { FAQ } from "./FAQ";
 export { Footer } from "./Footer";
 
 // Chat Room UI Components
-export { VideoChatView, type VideoChatViewProps } from "./VideoChatView";
-export { ChatOnlyView, type ChatOnlyViewProps } from "./ChatOnlyView";
+export { VideoChatView, type VideoChatViewProps, type VideoChatMessage } from "./VideoChatView";
+export { ChatOnlyView, type ChatOnlyViewProps, type ChatOnlyMessage } from "./ChatOnlyView";
+export { ProfileDialog } from "./ProfileDialog";
+export { SimpleProfileDialog } from "./SimpleProfileDialog";
+export { MessageActionMenu, type MessageActionMenuProps } from "./MessageActionMenu";
+export { MessageReportModal, type MessageReportModalProps, MESSAGE_REPORT_CATEGORIES } from "./MessageReportModal";
 
 // Legacy ChatRoom Components
 export { VideoCanvas, type VideoCanvasProps } from "./VideoCanvas";
