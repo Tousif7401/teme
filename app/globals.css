@@ -655,6 +655,7 @@ body[data-mode="nontech"] .mode-topbar {
   font-weight: 600;
   border: 2px solid var(--ink);
   text-align: center;
+  white-space: nowrap;
 }
 
 .panel-actions {
@@ -686,6 +687,7 @@ body[data-mode="nontech"] .mode-topbar {
   align-items: center;
   justify-content: center;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .action-btn.blue,
@@ -1145,6 +1147,27 @@ footer {
 
   .cam-controls-horizontal {
     gap: 8px;
+  }
+
+  /* Fix chat-only buttons at 1024px+ */
+  .view-profile-btn {
+    padding: 4px 6px 4px 6px;
+    font-size: 7px;
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  .action-btn-sm {
+    padding: 4px 10px;
+    font-size: 7px;
+    white-space: nowrap;
+  }
+}
+
+/* Large screens 1440px and above - adjust view profile button */
+@media (min-width: 1440px) {
+  .view-profile-btn {
+    padding-left: 18px;
   }
 }
 
