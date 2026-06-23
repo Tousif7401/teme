@@ -1125,7 +1125,7 @@ footer {
 /* Laptops/Tablets Landscape (1024px - 1279px) */
 @media (max-width: 1279px) {
   .specs-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .spec-item:nth-child(3) {
@@ -1215,7 +1215,7 @@ footer {
   }
 
   .specs-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .mode-body {
