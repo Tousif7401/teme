@@ -1,7 +1,6 @@
 'use client'
 
 import posthog from 'posthog-js'
-import { PostHogProvider as PHProvider } from 'posthog-js/react'
 
 // Token storage keys (must match services/api.ts)
 const ACCESS = 'teme_access'
@@ -31,56 +30,60 @@ function getUserIdFromToken(): string | null {
   }
 }
 
-/**
- * Get PostHog configuration options.
- * Session recordings are ENABLED by default (no consent required).
- */
-function getPostHogOptions() {
-  return {
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
-    capture_pageview: true,
-    capture_pageleave: true,
-    autocapture: false, // Disable autocapture for privacy
-    disable_session_recording: false, // Session recordings ON
-    disable_persistence: false,
-    persistence: 'localStorage' as const,
-    secure_cookie: true,
-    loaded: () => {
-      // Secure: Identify user from JWT token
-      const userId = getUserIdFromToken()
-      if (userId) {
-        posthog.identify(userId, {
-          logged_in: true,
-        })
+// Initialize PostHog on client side
+let posthogClient: typeof posthog | undefined = undefined
+
+if (typeof window !== 'undefined') {
+  const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY
+
+  if (!apiKey) {
+    console.error('[PostHog] NEXT_PUBLIC_POSTHOG_KEY is not set!')
+  } else {
+    posthogClient = posthog.init(apiKey, {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+      capture_pageview: true,
+      capture_pageleave: true,
+      autocapture: false,
+      disable_session_recording: false,
+      disable_persistence: false,
+      persistence: 'localStorage',
+      secure_cookie: true,
+      // Enable session recordings on localhost for testing
+      session_recording: {
+        recordCrossOriginIframes: true,
+        maskTextSelector: '*',
+      },
+      loaded: (ph) => {
+        console.log('[PostHog] Loaded successfully!', { apiKey })
+        // Ensure window.posthog is set
+        ;(window as any).posthog = ph
+        console.log('[PostHog] window.posthog set:', typeof (window as any).posthog)
+
+        // Identify user from JWT token
+        const userId = getUserIdFromToken()
+        if (userId) {
+          console.log('[PostHog] Identifying user:', userId)
+          ph.identify(userId, { logged_in: true })
+        }
       }
-    }
+    })
   }
 }
 
-// Provider wrapper - single source of initialization
+// Provider wrapper - just pass through, we initialize directly
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <PHProvider
-      apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY!}
-      options={getPostHogOptions()}
-    >
-      {children}
-    </PHProvider>
-  )
+  return <>{children}</>
 }
 
 /**
  * Helper to get the PostHog instance.
- * Returns undefined during SSR or if not initialized.
  */
 function getPostHog() {
-  if (typeof window === 'undefined') return undefined
-  return posthog
+  return posthogClient
 }
 
-// Custom analytics functions - use the global posthog instance
+// Custom analytics functions
 export const track = {
-  // Page views (auto-captured, but manual available)
   pageView: (page: string, properties?: Record<string, any>) => {
     getPostHog()?.capture('$pageview', {
       $current_url: page,
@@ -88,17 +91,14 @@ export const track = {
     })
   },
 
-  // Custom events
   event: (name: string, properties?: Record<string, any>) => {
     getPostHog()?.capture(name, properties)
   },
 
-  // User identification
   identify: (userId: string, traits?: Record<string, any>) => {
     getPostHog()?.identify(userId, traits)
   },
 
-  // User actions
   sessionStart: () => {
     getPostHog()?.capture('session_started')
   },
@@ -146,18 +146,15 @@ export const track = {
     getPostHog()?.capture('report_submitted', { category })
   },
 
-  // Feature usage
   featureUsed: (feature: string) => {
     getPostHog()?.capture('feature_used', { feature })
   },
 
-  // Error tracking
   error: (error: string, context?: Record<string, any>) => {
     getPostHog()?.capture('error_occurred', { error, ...context })
   }
 }
 
-// Reset on logout - clears user identity and session
 export const reset = () => {
   getPostHog()?.reset()
 }
