@@ -32,77 +32,57 @@ function getUserIdFromToken(): string | null {
 }
 
 /**
- * Check if user has consented to session recordings.
- * Stored in localStorage as 'posthog_session_recording_consent'
+ * Get PostHog configuration options.
+ * Session recordings are ENABLED by default (no consent required).
  */
-function hasRecordingConsent(): boolean {
-  if (typeof window === 'undefined') return false
-  const consent = localStorage.getItem('posthog_session_recording_consent')
-  return consent === 'true'
+function getPostHogOptions() {
+  return {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+    capture_pageview: true,
+    capture_pageleave: true,
+    autocapture: false, // Disable autocapture for privacy
+    disable_session_recording: false, // Session recordings ON
+    disable_persistence: false,
+    persistence: 'localStorage' as const,
+    secure_cookie: true,
+    loaded: () => {
+      // Secure: Identify user from JWT token
+      const userId = getUserIdFromToken()
+      if (userId) {
+        posthog.identify(userId, {
+          logged_in: true,
+        })
+      }
+    }
+  }
 }
 
-// Initialize PostHog client-side
-export const analytics = typeof window !== 'undefined'
-  ? posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
-      capture_pageview: true,
-      capture_pageleave: true,
-      autocapture: false, // Disable autocapture for privacy
-      disable_session_recording: !hasRecordingConsent(), // Respect consent
-      disable_persistence: false,
-      persistence: 'localStorage',
-      secure_cookie: true,
-      loaded: (ph) => {
-        // Secure: Identify user from JWT token
-        const userId = getUserIdFromToken()
-        if (userId) {
-          ph.identify(userId, {
-            // Add traits that help distinguish users without PII
-            logged_in: true,
-          })
-        }
-      }
-    })
-  : undefined
-
-// Provider wrapper - uses apiKey directly
+// Provider wrapper - single source of initialization
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   return (
     <PHProvider
       apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY!}
-      options={{
-        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
-        capture_pageview: true,
-        capture_pageleave: true,
-        autocapture: false,
-        disable_session_recording: false, // Will be toggled by consent
-        disable_persistence: false,
-        persistence: 'localStorage',
-        secure_cookie: true,
-        loaded: (ph) => {
-          // Check consent and toggle recording
-          if (!hasRecordingConsent()) {
-            ph.stopSessionRecording()
-          }
-
-          // Identify user from JWT
-          const userId = getUserIdFromToken()
-          if (userId) {
-            ph.identify(userId, { logged_in: true })
-          }
-        }
-      }}
+      options={getPostHogOptions()}
     >
       {children}
     </PHProvider>
   )
 }
 
-// Custom analytics functions
+/**
+ * Helper to get the PostHog instance.
+ * Returns undefined during SSR or if not initialized.
+ */
+function getPostHog() {
+  if (typeof window === 'undefined') return undefined
+  return posthog
+}
+
+// Custom analytics functions - use the global posthog instance
 export const track = {
   // Page views (auto-captured, but manual available)
   pageView: (page: string, properties?: Record<string, any>) => {
-    analytics?.capture('$pageview', {
+    getPostHog()?.capture('$pageview', {
       $current_url: page,
       ...properties
     })
@@ -110,99 +90,74 @@ export const track = {
 
   // Custom events
   event: (name: string, properties?: Record<string, any>) => {
-    analytics?.capture(name, properties)
+    getPostHog()?.capture(name, properties)
   },
 
   // User identification
   identify: (userId: string, traits?: Record<string, any>) => {
-    analytics?.identify(userId, traits)
+    getPostHog()?.identify(userId, traits)
   },
 
   // User actions
   sessionStart: () => {
-    analytics?.capture('session_started')
+    getPostHog()?.capture('session_started')
   },
 
   matchFound: (properties: {
     partnerName: string
     matchTime: number
   }) => {
-    analytics?.capture('match_found', properties)
+    getPostHog()?.capture('match_found', properties)
   },
 
   messageSent: () => {
-    analytics?.capture('message_sent')
+    getPostHog()?.capture('message_sent')
   },
 
   messageEdited: () => {
-    analytics?.capture('message_edited')
+    getPostHog()?.capture('message_edited')
   },
 
   messageReplied: () => {
-    analytics?.capture('message_replied')
+    getPostHog()?.capture('message_replied')
   },
 
   messageCopied: () => {
-    analytics?.capture('message_copied')
+    getPostHog()?.capture('message_copied')
   },
 
   messageReported: (reason: string) => {
-    analytics?.capture('message_reported', { reason })
+    getPostHog()?.capture('message_reported', { reason })
   },
 
   videoToggle: (action: 'camera_on' | 'camera_off' | 'mic_on' | 'mic_off') => {
-    analytics?.capture('media_toggled', { action })
+    getPostHog()?.capture('media_toggled', { action })
   },
 
   sessionEnded: (duration: number) => {
-    analytics?.capture('session_ended', { duration_ms: duration })
+    getPostHog()?.capture('session_ended', { duration_ms: duration })
   },
 
   profileViewed: (profileType: 'own' | 'peer') => {
-    analytics?.capture('profile_viewed', { profileType })
+    getPostHog()?.capture('profile_viewed', { profileType })
   },
 
   reportSubmitted: (category: string) => {
-    analytics?.capture('report_submitted', { category })
+    getPostHog()?.capture('report_submitted', { category })
   },
 
   // Feature usage
   featureUsed: (feature: string) => {
-    analytics?.capture('feature_used', { feature })
+    getPostHog()?.capture('feature_used', { feature })
   },
 
   // Error tracking
   error: (error: string, context?: Record<string, any>) => {
-    analytics?.capture('error_occurred', { error, ...context })
+    getPostHog()?.capture('error_occurred', { error, ...context })
   }
 }
 
 // Reset on logout - clears user identity and session
 export const reset = () => {
-  analytics?.reset()
-}
-
-/**
- * Session recording consent controls.
- * Users can opt-in/out of session recordings for privacy.
- */
-export const sessionRecording = {
-  /** Grant consent for session recordings */
-  grantConsent: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('posthog_session_recording_consent', 'true')
-    }
-    analytics?.startSessionRecording()
-  },
-
-  /** Revoke consent for session recordings */
-  revokeConsent: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('posthog_session_recording_consent', 'false')
-    }
-    analytics?.stopSessionRecording()
-  },
-
-  /** Check if user has granted consent */
-  hasConsent: (): boolean => hasRecordingConsent(),
+  getPostHog()?.reset()
 }
