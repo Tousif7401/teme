@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/Button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/Card";
 import { PulseTicker } from "@/components/PulseTicker";
 import { useAppStore } from "@/store/useAppStore";
+import { track } from "@/lib/analytics";
 
 // Available programming languages
 const LANGUAGES = [
@@ -28,6 +29,11 @@ export function LaunchpadView() {
   const [isCheckingMedia, setIsCheckingMedia] = useState(false);
   const [mediaPermission, setMediaPermission] = useState<"unknown" | "granted" | "denied">("unknown");
 
+  // Track page view
+  useEffect(() => {
+    track.pageView('launchpad', { view: 'launchpad' });
+  }, []);
+
   const toggleLanguage = (lang: string) => {
     setSelectedLanguages(prev =>
       prev.includes(lang)
@@ -42,8 +48,10 @@ export function LaunchpadView() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       stream.getTracks().forEach(track => track.stop());
       setMediaPermission("granted");
+      track.featureUsed('media_check_granted');
     } catch (error) {
       setMediaPermission("denied");
+      track.featureUsed('media_check_denied');
     }
     setIsCheckingMedia(false);
   };
@@ -52,6 +60,12 @@ export function LaunchpadView() {
     if (selectedLanguages.length > 0 && selectedVibe) {
       setLanguages(selectedLanguages);
       setVibe([selectedVibe]);
+      // Track preference configuration
+      track.event('preferences_configured', {
+        languageCount: selectedLanguages.length,
+        languages: selectedLanguages,
+        vibe: selectedVibe,
+      });
       setCurrentView("queue");
     }
   };

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ModeProvider } from "@/components/ModeProvider";
+import { PostHogProvider } from "@/lib/analytics";
+import { AnalyticsConsentBanner } from "@/components/AnalyticsConsentBanner";
 
 const bricolageGrotesque = Bricolage_Grotesque({
   weight: ["700", "800"],
@@ -33,7 +35,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${bricolageGrotesque.variable} ${ibmPlexMono.variable}`}>
         <ModeProvider />
-        {children}
+        <PostHogProvider>
+          {children}
+          <AnalyticsConsentBanner />
+        </PostHogProvider>
       </body>
     </html>
   );

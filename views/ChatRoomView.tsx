@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/store/useAppStore";
+import { track } from "@/lib/analytics";
 import {
   VideoCanvas,
   MediaControls,
@@ -27,6 +28,13 @@ type CodeBlock = {
 
 export function ChatRoomView() {
   const { user, setCurrentView, localStream, remoteStream } = useAppStore();
+  const [sessionStartTime] = useState(Date.now());
+
+  // Track session start when component mounts
+  useEffect(() => {
+    track.sessionStart();
+  }, []);
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -90,6 +98,7 @@ export function ChatRoomView() {
         timestamp: new Date(),
       },
     ]);
+    track.messageSent();
     setInputMessage("");
   };
 
@@ -116,6 +125,7 @@ export function ChatRoomView() {
       localStream?.getAudioTracks().forEach(track => {
         track.enabled = newState;
       });
+      track.videoToggle(newState ? 'mic_on' : 'mic_off');
       return newState;
     });
   };
@@ -127,11 +137,16 @@ export function ChatRoomView() {
       localStream?.getVideoTracks().forEach(track => {
         track.enabled = newState;
       });
+      track.videoToggle(newState ? 'camera_on' : 'camera_off');
       return newState;
     });
   };
 
   const handleLeaveRoom = () => {
+    // Track session duration
+    const duration = Date.now() - sessionStartTime;
+    track.sessionEnded(duration);
+
     // In production: cleanup WebRTC, socket, etc.
     setCurrentView("landing");
   };
