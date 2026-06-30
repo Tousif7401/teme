@@ -46,7 +46,8 @@ export async function GET(req: Request) {
     const res = NextResponse.redirect(redirect);
     res.cookies.delete("gh_state");
     return res;
-  } catch {
+  } catch (err) {
+    console.error("GitHub OAuth error:", err);
     return fail("server");
   }
 }
