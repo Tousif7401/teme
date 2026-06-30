@@ -47,7 +47,8 @@ export async function GET(req: Request) {
     const res = NextResponse.redirect(redirect);
     res.cookies.delete("g_state");
     return res;
-  } catch {
+  } catch (err) {
+    console.error("Google OAuth error:", err);
     return fail("server");
   }
 }
